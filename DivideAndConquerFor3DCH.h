@@ -11,6 +11,6 @@ public:
 
 public:
 	void BruceForceCH( vector<VERTEX>* pVertex );
-	bool RayTriangleIntersection( Ray r, TRIANGLE triangle );
+	bool RayTriangleIntersection( Ray r, TRIANGLE triangle, vector<VERTEX>* pVertex );
 
 };

@@ -84,7 +84,10 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="ConvexHullAlgorithm.h" />
     <ClInclude Include="D3D.h" />
+    <ClInclude Include="DCEL.h" />
+    <ClInclude Include="DivideAndConquerFor3DCH.h" />
     <ClInclude Include="GeoDefinition.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Header.h" />
@@ -96,7 +99,10 @@
   <ItemGroup>
     <ClCompile Include="3DModel.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="ConvexHullAlgorithm.cpp" />
     <ClCompile Include="D3D.cpp" />
+    <ClCompile Include="DCEL.cpp" />
+    <ClCompile Include="DivideAndConquerFor3DCH.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Input.cpp" />

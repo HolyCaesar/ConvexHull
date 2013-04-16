@@ -17,9 +17,23 @@ struct VERTEX
 
 struct TRIANGLE
 {
-	VERTEX pointOne;
-	VERTEX pointTwo;
-	VERTEX pointThree;
+	union P1
+	{
+		VERTEX* pointOne;
+		int    pointOneIndex;
+	}p1;
+
+	union P2
+	{
+		VERTEX* pointTwo;
+		int    pointTwoIndex;
+	}p2;
+
+	union P3
+	{
+		VERTEX* pointThree;
+		int    pointThreeIndex;
+	}p3;
 };
 
 struct Ray
