@@ -13,6 +13,25 @@ struct VERTEX
 {
     float x, y, z;
     D3DXVECTOR4 color;
+
+	VERTEX( float x1, float y1, float z1)
+	{
+		x = x1;
+		y = y1;
+		z = z1;
+	}
+
+	VERTEX()
+	{
+		x = 0;
+		y = 0;
+		z = 0;
+	}
+
+	const VERTEX operator -( VERTEX p1 )
+	{
+		return VERTEX( this->x - p1.x, this->y - p1.y, this->z - p1.z );
+	}
 };
 
 struct TRIANGLE
@@ -34,6 +53,12 @@ struct TRIANGLE
 		VERTEX* pointThree;
 		int    pointThreeIndex;
 	}p3;
+
+	friend ostream & operator << (ostream &cout, TRIANGLE rjb) 
+	{
+		cout << rjb.p1.pointOneIndex << ' ' << rjb.p2.pointTwoIndex << ' ' << rjb.p3.pointThreeIndex;
+		return cout;
+	}
 };
 
 struct Ray

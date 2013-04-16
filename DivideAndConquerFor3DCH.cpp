@@ -22,7 +22,7 @@ DivideAndConquerFor3DCH::~DivideAndConquerFor3DCH()
 
 void DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
 {
-	vector<TRIANGLE> triangleSet;
+	vector<TRIANGLE> triangleSet, finalTriangleSet;
 
 	// Generate all possible triangles
 	int pointSetSize = pVertex->size();
@@ -73,25 +73,65 @@ void DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
 		invRay = ray;
 		invRay.direction *= -1.0;
 
-		for( int j = i + 1; j < triangleSet.size(); j++ )
-		{
-			bool rayIntersect = RayTriangleIntersection( ray, triangleSet[ j ], pVertex );
-			bool invRayIntersect = RayTriangleIntersection( invRay, triangleSet[ j ], pVertex );
+		bool rayIntersect = false;
+		bool invRayIntersect = false;
 
-			// Remove the triangle that inside the convex hull
-			if( rayIntersect == true && invRayIntersect == true )
-			{
-				triangleSet.erase( triangleSet.begin() + j );
-			}
-			// This is the face that contribute to the convex hull and find its vertices order
-			else if( rayIntersect == false && invRayIntersect == true )
-			{
-				int tmpVerIndex = triangleSet[ i ].p2.pointTwoIndex;
-				triangleSet[ i ].p2.pointTwoIndex = triangleSet[ i ].p3.pointThreeIndex;
-				triangleSet[ i ].p3.pointThreeIndex = tmpVerIndex;
-			}
-			// The symetric case can be ignored.
+		if (i == 0)
+		{
+		cout << ray.position.x << ' ' << ray.position.y << ' ' << ray.position.z << endl;
+		cout << ray.direction.x << ' ' << ray.direction.y << ' ' << ray.direction.z << endl;
+		
+		
 		}
+		
+		for( int j = 0; j < triangleSet.size(); j++ )
+		{
+			if( j == i ) continue;
+
+			rayIntersect = RayTriangleIntersection( ray, triangleSet[ j ], pVertex );
+
+			if( rayIntersect )
+			{
+				break;
+			}
+		}
+
+		for( int j = 0; j < triangleSet.size(); j++ )
+		{
+			if( j == i ) continue;
+
+			invRayIntersect = RayTriangleIntersection( invRay, triangleSet[ j ], pVertex );
+
+			if( invRayIntersect )
+			{
+				break;
+			}
+		}
+	//	cout << rayIntersect << " " << invRayIntersect << endl;
+
+		// This is the face that contribute to the convex hull and find its vertices order
+		if( rayIntersect == false && invRayIntersect == true )
+		{
+			finalTriangleSet.push_back( triangleSet[ i ] );
+		}
+		else if( rayIntersect == true && invRayIntersect == false )
+		{
+			TRIANGLE tmpTri = triangleSet[ i ];
+			int tmpVerIndex = tmpTri.p2.pointTwoIndex;
+			tmpTri.p2.pointTwoIndex = tmpTri.p3.pointThreeIndex;
+			tmpTri.p3.pointThreeIndex = tmpVerIndex;
+
+			finalTriangleSet.push_back( tmpTri );
+		}
+	}
+
+	/*
+	* TODO Test code, need to be delete
+	*/
+	cout << finalTriangleSet.size() << endl;
+	for( int i = 0; i < finalTriangleSet.size(); i++ )
+	{
+		cout << "Triange whose points are " << finalTriangleSet[ i ].p1.pointOneIndex << " ," << finalTriangleSet[ i ].p2.pointTwoIndex << " and " << finalTriangleSet[ i ].p3.pointThreeIndex << endl;
 	}
 
 	// Use DCEL to represent the convex hull
@@ -104,34 +144,48 @@ bool DivideAndConquerFor3DCH::RayTriangleIntersection( Ray r, TRIANGLE triangle,
 	VERTEX pointTwo = (*pVertex)[ triangle.p2.pointTwoIndex ];
 	VERTEX pointThree = (*pVertex)[ triangle.p3.pointThreeIndex ];
 
-	//D3DXVECTOR3 edge1( triangle.pointTwo.x - triangle.pointOne.x, triangle.pointTwo.y - triangle.pointOne.y, triangle.pointTwo.z - triangle.pointOne.z );
-	//D3DXVECTOR3 edge2( triangle.pointThree.x - triangle.pointOne.x, triangle.pointThree.y - triangle.pointOne.y, triangle.pointThree.z - triangle.pointOne.z );
 	D3DXVECTOR3 edge1( pointTwo.x - pointOne.x, pointTwo.y - pointOne.y, pointTwo.z - pointOne.z );
 	D3DXVECTOR3 edge2( pointThree.x - pointOne.x, pointThree.y - pointOne.y, pointThree.z - pointOne.z );
 
-	D3DXVECTOR3 s1;
-	D3DXVec3Cross( &s1, &r.direction, &edge2 );
+	D3DXVECTOR3 triNormal;
+	D3DXVec3Cross( &triNormal, &edge1, &edge2 );
+	D3DXVec3Normalize( &triNormal, &triNormal );
+	double denominator = D3DXVec3Dot( &triNormal, &r.direction );
 
-	float divisor = D3DXVec3Dot( &s1, &edge1 );
-	if( divisor == 0.0 )
+	// Ray parallels to the plane
+	if( fabs( denominator ) < 0.000001 )
 	{
 		return false;
 	}
 
-	float invDivisor = 1 / divisor;
+	double d = triNormal.x * pointOne.x + triNormal.y * pointOne.y + triNormal.z * pointOne.z;
+	double t = ( d - D3DXVec3Dot( &triNormal, &r.position ) ) / denominator;
 
-	//D3DXVECTOR3 distance( r.position.x - triangle.pointOne.x, r.position.y - triangle.pointOne.y, r.position.z - triangle.pointOne.z );
-	D3DXVECTOR3 distance( r.position.x - pointOne.x, r.position.y - pointOne.y, r.position.z - pointOne.z );
-	float barycCoord_1 = D3DXVec3Dot( &distance, &s1 ) * invDivisor;
-	if(	barycCoord_1 < 0.0 || barycCoord_1 > 1.0 )
+	if (t <= 0)
 	{
 		return false;
 	}
+	D3DXVECTOR3 intersectPoint = r.position + t * r.direction;
+	
+	D3DXVECTOR3 tmp;
+	D3DXVec3Cross( &tmp, &edge1, &edge2 );
+	double totalArea = D3DXVec3Length( &tmp ) * 0.5;
 
-	D3DXVECTOR3 s2;
-	D3DXVec3Cross( &s2, &distance, &edge1 );
-	float barycCoord_2 = D3DXVec3Dot( &r.direction, &s2 ) * invDivisor;
-	if( barycCoord_2 < 0.0 || ( barycCoord_1 + barycCoord_2 ) > 1.0 )
+	VERTEX tmpV = pointThree - pointTwo;
+	D3DXVec3Cross( &tmp, &D3DXVECTOR3( tmpV.x, tmpV.y, tmpV.z ), &D3DXVECTOR3( intersectPoint.x - pointTwo.x, intersectPoint.y - pointTwo.y, intersectPoint.z - pointTwo.z ) );
+	double alpha = D3DXVec3Length( &tmp ) * 0.5 / totalArea;
+	
+	tmpV = pointOne - pointThree;
+	D3DXVec3Cross( &tmp, &D3DXVECTOR3( tmpV.x, tmpV.y, tmpV.z ), &D3DXVECTOR3( intersectPoint.x - pointThree.x, intersectPoint.y - pointThree.y, intersectPoint.z - pointThree.z ) );
+	double beta = D3DXVec3Length( &tmp ) * 0.5 / totalArea;
+
+	tmpV = pointTwo - pointOne;
+	D3DXVec3Cross( &tmp, &D3DXVECTOR3( tmpV.x, tmpV.y, tmpV.z ), &D3DXVECTOR3( intersectPoint.x - pointOne.x, intersectPoint.y - pointOne.y, intersectPoint.z - pointOne.z ) );
+	double gamma = D3DXVec3Length( &tmp ) * 0.5 / totalArea;
+
+	//cout << alpha << ' ' << beta << ' ' << gamma << endl;
+//	cout << alpha + beta + gamma << endl;
+	if( alpha + beta + gamma > 1.00001 )
 	{
 		return false;
 	}
