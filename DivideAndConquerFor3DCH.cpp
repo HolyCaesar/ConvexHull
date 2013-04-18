@@ -1,5 +1,7 @@
 #include "DivideAndConquerFor3DCH.h"
 
+int test = 0;
+
 DivideAndConquerFor3DCH::DivideAndConquerFor3DCH()
 {
 	m_pDCEL = NULL;
@@ -75,14 +77,6 @@ void DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
 
 		bool rayIntersect = false;
 		bool invRayIntersect = false;
-
-		if (i == 0)
-		{
-		cout << ray.position.x << ' ' << ray.position.y << ' ' << ray.position.z << endl;
-		cout << ray.direction.x << ' ' << ray.direction.y << ' ' << ray.direction.z << endl;
-		
-		
-		}
 		
 		for( int j = 0; j < triangleSet.size(); j++ )
 		{
@@ -100,6 +94,7 @@ void DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
 		{
 			if( j == i ) continue;
 
+			test = i;
 			invRayIntersect = RayTriangleIntersection( invRay, triangleSet[ j ], pVertex );
 
 			if( invRayIntersect )
@@ -107,7 +102,11 @@ void DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
 				break;
 			}
 		}
-	//	cout << rayIntersect << " " << invRayIntersect << endl;
+
+		if( i == 1 )
+		{
+			cout << rayIntersect << " " << invRayIntersect << endl;
+		}
 
 		// This is the face that contribute to the convex hull and find its vertices order
 		if( rayIntersect == false && invRayIntersect == true )
@@ -161,31 +160,64 @@ bool DivideAndConquerFor3DCH::RayTriangleIntersection( Ray r, TRIANGLE triangle,
 	double d = triNormal.x * pointOne.x + triNormal.y * pointOne.y + triNormal.z * pointOne.z;
 	double t = ( d - D3DXVec3Dot( &triNormal, &r.position ) ) / denominator;
 
-	if (t <= 0)
+	if( test == 1 )
+	{
+		cout << "t is " << t << endl;
+	}
+
+	// Trianle behine the ray
+	if( t <= 0 )
 	{
 		return false;
 	}
+
 	D3DXVECTOR3 intersectPoint = r.position + t * r.direction;
 	
-	D3DXVECTOR3 tmp;
-	D3DXVec3Cross( &tmp, &edge1, &edge2 );
-	double totalArea = D3DXVec3Length( &tmp ) * 0.5;
+	//D3DXVECTOR3 tmp;
+	//D3DXVec3Cross( &tmp, &edge1, &edge2 );
+	//double totalAmount = D3DXVec3Dot( &tmp, &triNormal );
+	//double totalArea = D3DXVec3Length( &tmp ) * 0.5;
 
-	VERTEX tmpV = pointThree - pointTwo;
-	D3DXVec3Cross( &tmp, &D3DXVECTOR3( tmpV.x, tmpV.y, tmpV.z ), &D3DXVECTOR3( intersectPoint.x - pointTwo.x, intersectPoint.y - pointTwo.y, intersectPoint.z - pointTwo.z ) );
-	double alpha = D3DXVec3Length( &tmp ) * 0.5 / totalArea;
-	
-	tmpV = pointOne - pointThree;
-	D3DXVec3Cross( &tmp, &D3DXVECTOR3( tmpV.x, tmpV.y, tmpV.z ), &D3DXVECTOR3( intersectPoint.x - pointThree.x, intersectPoint.y - pointThree.y, intersectPoint.z - pointThree.z ) );
-	double beta = D3DXVec3Length( &tmp ) * 0.5 / totalArea;
+	//VERTEX tmpV = pointThree - pointTwo;
+	//D3DXVec3Cross( &tmp, &D3DXVECTOR3( tmpV.x, tmpV.y, tmpV.z ), &D3DXVECTOR3( intersectPoint.x - pointTwo.x, intersectPoint.y - pointTwo.y, intersectPoint.z - pointTwo.z ) );
+	//double alpha = D3DXVec3Length( &tmp ) * 0.5 / totalArea;
+	//
+	//tmpV = pointOne - pointThree;
+	//D3DXVec3Cross( &tmp, &D3DXVECTOR3( tmpV.x, tmpV.y, tmpV.z ), &D3DXVECTOR3( intersectPoint.x - pointThree.x, intersectPoint.y - pointThree.y, intersectPoint.z - pointThree.z ) );
+	//double beta = D3DXVec3Length( &tmp ) * 0.5 / totalArea;
 
-	tmpV = pointTwo - pointOne;
-	D3DXVec3Cross( &tmp, &D3DXVECTOR3( tmpV.x, tmpV.y, tmpV.z ), &D3DXVECTOR3( intersectPoint.x - pointOne.x, intersectPoint.y - pointOne.y, intersectPoint.z - pointOne.z ) );
-	double gamma = D3DXVec3Length( &tmp ) * 0.5 / totalArea;
+	//tmpV = pointTwo - pointOne;
+	//D3DXVec3Cross( &tmp, &D3DXVECTOR3( tmpV.x, tmpV.y, tmpV.z ), &D3DXVECTOR3( intersectPoint.x - pointOne.x, intersectPoint.y - pointOne.y, intersectPoint.z - pointOne.z ) );
+	//double gamma = D3DXVec3Length( &tmp ) * 0.5 / totalArea;
 
-	//cout << alpha << ' ' << beta << ' ' << gamma << endl;
-//	cout << alpha + beta + gamma << endl;
-	if( alpha + beta + gamma > 1.00001 )
+//	if( alpha + beta + gamma > 1.00001 )
+//	{
+//		return false;
+//	}
+
+	D3DXVECTOR3 tmpEdge( intersectPoint.x - pointOne.x, intersectPoint.y - pointOne.y, intersectPoint.z - pointOne.z );
+	D3DXVECTOR3 tmpCrossRes;
+	D3DXVec3Cross( &tmpCrossRes, &edge1, &tmpEdge );
+	double alpha = D3DXVec3Dot( &triNormal, &tmpCrossRes );
+	if( alpha < 0.0f )
+	{
+		return false;
+	}
+
+	tmpEdge = D3DXVECTOR3( intersectPoint.x - pointTwo.x, intersectPoint.y - pointTwo.y, intersectPoint.z - pointTwo.z);
+	D3DXVECTOR3 tmpEdge2( pointThree.x - pointTwo.x, pointThree.y - pointTwo.y, pointThree.z - pointTwo.z );
+	D3DXVec3Cross( &tmpCrossRes, &tmpEdge2, &tmpEdge ); 
+	double beta = D3DXVec3Dot( &triNormal, &tmpCrossRes );
+	if( beta < 0.0f ) 
+	{
+		return false;
+	}
+
+	tmpEdge = D3DXVECTOR3( intersectPoint.x - pointThree.x, intersectPoint.y - pointThree.y, intersectPoint.z - pointThree.z);
+	tmpEdge2 = D3DXVECTOR3( pointOne.x - pointThree.x, pointOne.y - pointThree.y, pointOne.z - pointThree.z );
+	D3DXVec3Cross( &tmpCrossRes, &tmpEdge2, &tmpEdge ); 
+	double gamma = D3DXVec3Dot( &triNormal, &tmpCrossRes );
+	if( gamma < 0.0f )
 	{
 		return false;
 	}

@@ -54,7 +54,7 @@ struct TRIANGLE
 		int    pointThreeIndex;
 	}p3;
 
-	friend ostream & operator << (ostream &cout, TRIANGLE rjb) 
+	friend ostream & operator << ( ostream &cout, TRIANGLE rjb ) 
 	{
 		cout << rjb.p1.pointOneIndex << ' ' << rjb.p2.pointTwoIndex << ' ' << rjb.p3.pointThreeIndex;
 		return cout;
