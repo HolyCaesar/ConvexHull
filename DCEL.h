@@ -29,7 +29,7 @@ struct FaceObject
 
 class DCEL
 {
-private:
+public:
 	list<HalfedgeObject*>* m_HalfEdges;
 	list<VertexObject*>*   m_Vertexs;
 	list<FaceObject*>*     m_Faces;
@@ -40,12 +40,14 @@ public:
 	~DCEL();
 
 	void CreateDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex );
+	void test( FaceObject* faceObject );
+	int  findVertexID( VertexObject* vertexObject );
 
 private:
 	template<class T>
 	void cleanList( list<T>* target );
 
 	// Given a half edge, find its previous edge and next edge
-	void findPreNextEdges( VertexObject* targetVertex1, VertexObject* targetVertex2, HalfedgeObject* preEdge, HalfedgeObject* nextEdge );
+	void findPreNextEdges( VertexObject* refVertex, VertexObject* targetVertex1, VertexObject* targetVertex2, HalfedgeObject* preEdge, HalfedgeObject* nextEdge );
 
 };

@@ -103,11 +103,6 @@ void DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
 			}
 		}
 
-		if( i == 1 )
-		{
-			cout << rayIntersect << " " << invRayIntersect << endl;
-		}
-
 		// This is the face that contribute to the convex hull and find its vertices order
 		if( rayIntersect == false && invRayIntersect == true )
 		{
@@ -134,7 +129,13 @@ void DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
 	}
 
 	// Use DCEL to represent the convex hull
+	m_pDCEL->CreateDCEL( &finalTriangleSet, pVertex );
 
+	list<FaceObject*>::iterator iter;
+	for( iter = m_pDCEL->m_Faces->begin(); iter != m_pDCEL->m_Faces->end(); iter++ )
+	{
+		m_pDCEL->test( *iter );
+	}
 }
 
 bool DivideAndConquerFor3DCH::RayTriangleIntersection( Ray r, TRIANGLE triangle, vector<VERTEX>* pVertex )
@@ -159,11 +160,6 @@ bool DivideAndConquerFor3DCH::RayTriangleIntersection( Ray r, TRIANGLE triangle,
 
 	double d = triNormal.x * pointOne.x + triNormal.y * pointOne.y + triNormal.z * pointOne.z;
 	double t = ( d - D3DXVec3Dot( &triNormal, &r.position ) ) / denominator;
-
-	if( test == 1 )
-	{
-		cout << "t is " << t << endl;
-	}
 
 	// Trianle behine the ray
 	if( t <= 0 )

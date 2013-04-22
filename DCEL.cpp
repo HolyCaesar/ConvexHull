@@ -47,6 +47,7 @@ void DCEL::CreateDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex )
 		m_Vertexs->push_back( vo );
 	}
 
+	// Buiuild halfedges that are belong to this current face
 	for( int i = 0; i < pTriangles->size(); i++ )
 	{
 		TRIANGLE triangle = (*pTriangles)[ i ];
@@ -76,100 +77,110 @@ void DCEL::CreateDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex )
 			}
 		}
 		
-		HalfedgeObject *hEdge11 = NULL, *hEdge12 = NULL, *hEdge21 = NULL, *hEdge22 = NULL, *hEdge31 = NULL, *hEdge32 = NULL;
+		// Create three interior halfedges, their twins will be assigned later
+		HalfedgeObject *hEdge1 = new HalfedgeObject, *hEdge2 = new HalfedgeObject, *hEdge3 = new HalfedgeObject;
+		m_HalfEdges->push_back( hEdge1 );
+		m_HalfEdges->push_back( hEdge2 );
+		m_HalfEdges->push_back( hEdge3 );
+
 		FaceObject* face = new FaceObject;
-		face->attachedEdge = NULL;
+		face->attachedEdge = hEdge1;
 		m_Faces->push_back( face );
 
 		if( !pointOnePtr->leaving )
 		{
-			// hEdge11 is the leaving edge of this point
-			hEdge11 = new HalfedgeObject;
-			// hEdge12 is the other half edge of this point
-			hEdge12 = new HalfedgeObject;
-			m_HalfEdges->push_back( hEdge11 );
-			m_HalfEdges->push_back( hEdge12 );
-
-			face->attachedEdge = hEdge11;
-			// TODO add attachedEdge here
-			hEdge11->origin = pointOnePtr;
-			hEdge11->twins = hEdge21;
-			hEdge11->attachedFace = face;
-
-			hEdge12->twins = hEdge11;
-			hEdge12->origin = pointTwoPtr;
-			hEdge12->attachedFace = face;
+			pointOnePtr->leaving = hEdge1;
 		}
+		hEdge1->origin = pointOnePtr;
+		hEdge1->twins = NULL;
+		hEdge1->attachedFace = face;
+		hEdge1->nextEdge = hEdge2;
+		hEdge1->preEdge  = hEdge3;
 
 		if( !pointTwoPtr->leaving )
 		{
-			// hEdge21 is the leaving edge of this point
-			hEdge21 = new HalfedgeObject;
-			// hEdge22 is the other half edge of this point
-			hEdge22 = new HalfedgeObject;
-			m_HalfEdges->push_back( hEdge21 );
-			m_HalfEdges->push_back( hEdge22 );
-
-			if( !face->attachedEdge )
-			{
-				face->attachedEdge = hEdge21;
-			}
-			hEdge21->origin = pointTwoPtr;
-			hEdge21->attachedFace = face;
-			hEdge21->twins = hEdge22;
-			
-			hEdge22->twins = hEdge21;
-			hEdge22->origin = pointThreePtr;
-			hEdge22->attachedFace = face;
+			pointTwoPtr->leaving = hEdge2;
 		}
+		hEdge2->origin = pointTwoPtr;
+		hEdge2->twins = NULL;
+		hEdge2->attachedFace = face;
+		hEdge2->nextEdge = hEdge3;
+		hEdge2->preEdge  = hEdge1;
 
 		if( !pointThreePtr->leaving )
 		{
-			// hEdge21 is the leaving edge of this point
-			hEdge31 = new HalfedgeObject;
-			// hEdge22 is the other half edge of this point
-			hEdge32 = new HalfedgeObject;
-			m_HalfEdges->push_back( hEdge31 );
-			m_HalfEdges->push_back( hEdge32 );
-
-			if( !face->attachedEdge )
-			{
-				face->attachedEdge = hEdge31;
-			}
-			hEdge31->origin = pointThreePtr;
-			hEdge31->twins = hEdge32;
-			hEdge31->attachedFace = face;
-
-			hEdge32->twins = hEdge31;
-			hEdge32->origin = pointOnePtr;
-			hEdge32->attachedFace = face;
+			pointThreePtr->leaving = hEdge3;
 		}
+		hEdge3->origin = pointThreePtr;
+		hEdge3->twins = NULL;
+		hEdge3->attachedFace = face;
+		hEdge3->nextEdge = hEdge1;
+		hEdge3->preEdge  = hEdge2;
+	}
 
-		findPreNextEdges( pointTwoPtr, pointThreePtr, hEdge11->preEdge, hEdge11->nextEdge );
-		findPreNextEdges( pointOnePtr, pointThreePtr, hEdge12->preEdge, hEdge12->nextEdge );
-
-		findPreNextEdges( pointThreePtr, pointOnePtr, hEdge21->preEdge, hEdge21->nextEdge );
-		findPreNextEdges( pointTwoPtr, pointOnePtr, hEdge22->preEdge, hEdge22->nextEdge );
-
-		findPreNextEdges( pointOnePtr, pointTwoPtr, hEdge31->preEdge, hEdge31->nextEdge );
-		findPreNextEdges( pointThreePtr, pointTwoPtr, hEdge32->preEdge, hEdge32->nextEdge );
+	// Find twin for each halfedge
+	list<HalfedgeObject*>::iterator list_iter;
+	list<HalfedgeObject*>::iterator tmp_list_iter;
+	for( list_iter = m_HalfEdges->begin(); list_iter != m_HalfEdges->end(); list_iter++ )
+	{
+		if( (*list_iter)->twins == NULL )
+		{
+			for( tmp_list_iter = m_HalfEdges->begin(); tmp_list_iter != m_HalfEdges->end(); tmp_list_iter++ )
+			{
+				if( (*tmp_list_iter)->nextEdge->origin == (*list_iter)->origin )
+				{
+					(*tmp_list_iter)->twins = (*list_iter);
+					(*list_iter)->twins = (*tmp_list_iter);
+				}
+			}
+		}
 	}
 }
 
-void DCEL::findPreNextEdges( VertexObject* targetVertex1, VertexObject* targetVertex2, HalfedgeObject* preEdge, HalfedgeObject* nextEdge )
+void DCEL::findPreNextEdges( VertexObject* refVertex, VertexObject* targetVertex1, VertexObject* targetVertex2, HalfedgeObject* preEdge, HalfedgeObject* nextEdge )
 {
 	// targetVertex1 uses for finding nextEdge, targetVertex2 uses for finding preEdge
 	list<HalfedgeObject*>::iterator iter;
 	for( iter = m_HalfEdges->begin(); iter != m_HalfEdges->end(); iter++ )
 	{
-		if( (*iter)->origin == targetVertex1 )
+		if( (*iter)->origin == targetVertex1 && (*iter)->twins->origin == targetVertex2 )
 		{
 			nextEdge = (*iter);
 		}
 
-		if( (*iter)->origin == targetVertex2 )
+		if( (*iter)->origin == targetVertex2 && (*iter)->twins->origin == refVertex )
 		{
 			preEdge = (*iter);
 		}
 	}
+}
+
+void DCEL::test( FaceObject* faceObject )
+{
+	HalfedgeObject* halfedgeObject = faceObject->attachedEdge;
+	VertexObject* firstVertexObject = halfedgeObject->origin;
+	VertexObject* secondVertexObject = halfedgeObject->nextEdge->origin;
+	VertexObject* thirdVertexObject = halfedgeObject->nextEdge->nextEdge->origin;
+
+	// Print out all vertices that belong to this face
+	cout << "This face is consist of point " << findVertexID( firstVertexObject ) 
+		 << " ," << findVertexID( secondVertexObject )
+		 << " and " << findVertexID( thirdVertexObject ) << endl;
+}
+
+int DCEL::findVertexID( VertexObject* vertexObjcet )
+{
+	list<VertexObject*>::iterator iter;
+
+	int count = 0;
+	for( iter = m_Vertexs->begin(); iter != m_Vertexs->end(); iter++, count++ )
+	{
+		if( *iter == vertexObjcet )
+		{
+			return count;
+		}
+	}
+
+	// If this vertex doesn't exist
+	return -1;
 }

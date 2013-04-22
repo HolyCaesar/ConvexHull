@@ -91,9 +91,9 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	pointSet.push_back( p13 );
 	pointSet.push_back( p14 );
 	pointSet.push_back( p00 );
-	pointSet.push_back( p21 );
-	pointSet.push_back( p22 );
-	pointSet.push_back( p23 );
+	//pointSet.push_back( p21 );
+	//pointSet.push_back( p22 );
+	//pointSet.push_back( p23 );
 	//pointSet.push_back( p24 );
 
 	DivideAndConquerFor3DCH test;
