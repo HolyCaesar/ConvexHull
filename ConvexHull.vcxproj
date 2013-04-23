@@ -93,6 +93,7 @@
     <ClInclude Include="Header.h" />
     <ClInclude Include="3DModel.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="PointGenerator.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SystemClass.h" />
   </ItemGroup>

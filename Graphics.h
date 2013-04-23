@@ -5,7 +5,7 @@
 #include "Header.h"
 #include "Constants.h"
 #include "D3D.h"
-#include "DXUT.h"
+//#include "DXUT.h"
 #include "3DModel.h"
 #include "Camera.h"
 #include "Shader.h"

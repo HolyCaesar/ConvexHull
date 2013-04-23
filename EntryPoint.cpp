@@ -99,6 +99,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	DivideAndConquerFor3DCH test;
 	test.BruceForceCH( &pointSet );
 	
+	
 	int a;
 	cin >> a;
 	
