@@ -60,6 +60,12 @@
     <ClInclude Include="PointGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IncrementalHull3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IncrementalHull3DFast.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntryPoint.cpp">

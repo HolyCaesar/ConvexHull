@@ -2,6 +2,9 @@
 
 #include "DCEL.h"
 #include "DivideAndConquerFor3DCH.h"
+#include "IncrementalHull3D.h"
+#include "PointGenerator.h"
+#include "IncrementalHull3DFast.h"
 // Test code
 #include <vector>
 struct point{
@@ -27,6 +30,18 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	
 	UseConsole();
 
+	int n = 20;
+	PointGenerator::seed();
+    vector<VERTEX> a = PointGenerator::pointsInCube(n);
+    cout << "algorithm begins!" << endl;
+    IncrementalHull3DFast rjb(a);
+	
+//    DivideAndConquer rjb(a);
+	cout << rjb.dcel << endl;
+
+
+
+
 	// Create the system object.
 	System = new SystemClass;
 	if(!System)
@@ -40,6 +55,16 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	{
 		System->Run();
 	}
+
+
+	
+	
+
+
+
+
+
+
 
 	// Shutdown and release the system object.
 	System->Shutdown();
@@ -84,7 +109,6 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	//int a;
 	//cin >> a;
 	
-
 
 	return 0;
 }

@@ -18,7 +18,6 @@ struct HalfedgeObject
 
 	// Added by Yuan Li, for deletion
 	list<HalfedgeObject*>::iterator it;
-    bool visited;
 };
 
 struct VertexObject
@@ -28,9 +27,6 @@ struct VertexObject
 	// Added by Yuan Li
 	VERTEX *v;
 	list<VertexObject*>::iterator it;
-	void* data;
-
-    bool visited;
 };
 
 struct FaceObject
@@ -40,9 +36,6 @@ struct FaceObject
 	// Added by Yuan Li
 	VECTOR normal;
 	list<FaceObject*>::iterator it;
-	void* data;
-    bool isDeleted;
-    FaceObject() { isDeleted = false; }
 };
 
 class DCEL

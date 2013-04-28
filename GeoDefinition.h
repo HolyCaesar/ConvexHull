@@ -9,7 +9,7 @@
 #include <D3DX10math.h>
 
 // Added by Yuan Li
-#define EPS 1E-10
+#define EPS 1E-8
 
 
 /*Primitive Oject*/
@@ -94,7 +94,6 @@ struct Ray
 	D3DXVECTOR3 direction;
 };
 
-// Added by Yuan Li
 struct VECTOR
 {
 	float x, y, z;
@@ -124,12 +123,26 @@ struct VECTOR
 	{
 		return sqrt(x * x + y * y + z * z);
 	}
+    bool operator == (const VECTOR &p) const
+	{
+		return fabs(x - p.x) < EPS  && fabs(y - p.y) < EPS && fabs(z - p.z) < EPS;
+	}
+    VECTOR operator *(float f)
+    {
+        return VECTOR(x * f, y * f, z * f);
+    }
+    void operator *= (float f)
+    {
+        x *= f;
+        y *= f;
+        z *= f;
+    }
 	VECTOR normalize()
 	{
 		VECTOR ans = *this;
 		float length = this->length();
 		
-		assert(length > EPS);
+//		assert(length > EPS);
         
 		ans.x /= length;
 		ans.y /= length;
@@ -142,4 +155,5 @@ struct VECTOR
 		return cout;
     }
 };
+
 #endif // STRUCTURES_H
