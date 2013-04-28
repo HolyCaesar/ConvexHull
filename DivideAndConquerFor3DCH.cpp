@@ -22,7 +22,7 @@ DivideAndConquerFor3DCH::~DivideAndConquerFor3DCH()
 	}
 }
 
-void DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
+DCEL DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
 {
 	vector<TRIANGLE> triangleSet, finalTriangleSet;
 
@@ -129,13 +129,18 @@ void DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX>* pVertex )
 	}
 
 	// Use DCEL to represent the convex hull
-	m_pDCEL->CreateDCEL( &finalTriangleSet, pVertex );
+	//m_pDCEL->createDCEL( &finalTriangleSet, pVertex );
 
-	list<FaceObject*>::iterator iter;
-	for( iter = m_pDCEL->m_Faces->begin(); iter != m_pDCEL->m_Faces->end(); iter++ )
-	{
-		m_pDCEL->test( *iter );
-	}
+	//list<FaceObject*>::iterator iter;
+	//for( iter = m_pDCEL->m_Faces->begin(); iter != m_pDCEL->m_Faces->end(); iter++ )
+	//{
+	//	//m_pDCEL->test( *iter );
+	//}
+
+	DCEL dcel;
+	dcel.createDCEL( &finalTriangleSet, pVertex );
+
+	return dcel;
 }
 
 bool DivideAndConquerFor3DCH::RayTriangleIntersection( Ray r, TRIANGLE triangle, vector<VERTEX>* pVertex )
@@ -219,4 +224,178 @@ bool DivideAndConquerFor3DCH::RayTriangleIntersection( Ray r, TRIANGLE triangle,
 	}
 
 	return true;
+}
+
+void DivideAndConquerFor3DCH::Calculate3DConvexHull( vector<VERTEX>* pVertex )
+{
+	
+}
+
+DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, int startPoint, int endPoint )
+{
+	/*
+	* Phase 1: Find two convex hulls
+	*/
+	if( endPoint - startPoint < 8 )
+	{
+		vector<VERTEX> tmpVertexSet;
+		for( int i = startPoint; i < endPoint - startPoint + 1; i++ )
+		{
+			tmpVertexSet.push_back( (*pVertex)[ i ] );
+		}
+		return BruceForceCH( &tmpVertexSet );
+	}
+
+	int midPoint = ( endPoint - startPoint ) * 0.5;
+	DCEL CH1 = DVCalculate3DConvexHull( pVertex, startPoint, midPoint );
+	DCEL CH2 = DVCalculate3DConvexHull( pVertex, midPoint + 1, endPoint );
+
+	/*
+	* Phase 2: Merge two convex hulls
+	*/
+	// BruceForce method to find the tangent of two convex hulls. This make this algorithm no nlogn any more
+	list<VertexObject*>::iterator CH1VexIter;
+	list<VertexObject*>::iterator CH2VexIter;
+	CH1VexIter = CH1.m_Vertexs->begin();
+	CH2VexIter = CH2.m_Vertexs->begin();
+
+	VERTEX* v1,* v2;
+	VertexObject* v1AtTanVO = NULL, * v2AtTanVO = NULL;
+	v1 = (*CH1VexIter++)->v;
+	v2 = (*CH2VexIter++)->v;
+	// Initialize the first tangent line
+	D3DXVECTOR2 CH2DTangent( v1->x - v2->x, v1->y - v2->y );
+	for( ; CH1VexIter != CH1.m_Vertexs->end(); CH1VexIter++ )
+	{
+		for( ; CH2VexIter != CH2.m_Vertexs->end(); CH2VexIter++ )
+		{
+			v1 = (*CH1VexIter)->v;
+			v2 = (*CH2VexIter)->v;
+
+			D3DXVECTOR2 tmpTangent( v1->x - v2->x, v1->y - v2->y );
+			int cross2D = CH2DTangent.x * tmpTangent.y - CH2DTangent.y * tmpTangent.x;
+			// TmpTangent lies on Ch2DTangent's right side
+			if( cross2D > 0 )
+			{
+				CH2DTangent = tmpTangent;
+				v1AtTanVO = *CH1VexIter;
+				v2AtTanVO = *CH2VexIter;
+			}
+		}
+	}
+
+	// Find a plane that cross this tangent and parallel z axis
+	D3DXVECTOR3 planV1( v1AtTanVO->v->x - v2AtTanVO->v->x, v1AtTanVO->v->y - v2AtTanVO->v->y, v1AtTanVO->v->z - v2AtTanVO->v->z );
+	D3DXVECTOR3 planV2( 0.0f, 0.0f, -1.0f * v1AtTanVO->v->z );
+	D3DXVECTOR3 planeNormal, tmpPlaneNormal;
+	D3DXVec3Cross( &planeNormal, &planV1, &planV2 );
+	
+	// These two points are two ends of the tangent
+	VertexObject* vE1Start = v1AtTanVO, * vE2Start = v2AtTanVO;
+	vector<VertexObject*> CHCandidates;
+	CHCandidates.push_back( v1AtTanVO );
+	CHCandidates.push_back( v2AtTanVO );
+    
+	do{
+		// Start warping this two convex hull
+		double maxPlaneAngleE1 = 0.0f, maxPlaneAngleE2 = 0.0f;
+		HalfedgeObject* initialHalfEdge, * currentHalfEdge;
+		initialHalfEdge = v1AtTanVO->leaving;
+		currentHalfEdge = initialHalfEdge->twins;
+		VERTEX* testVertex = currentHalfEdge->origin->v;
+		VertexObject* resultVertex1 = NULL, * resultVertex2 = NULL;
+		while( currentHalfEdge->nextEdge != initialHalfEdge )
+		{
+			// Find the angle between two plane
+			planV1 = D3DXVECTOR3( v1AtTanVO->v->x - testVertex->x, v1AtTanVO->v->y - testVertex->y, v1AtTanVO->v->z - testVertex->z );
+			planV2 = D3DXVECTOR3( v2AtTanVO->v->x - v1AtTanVO->v->x, v2AtTanVO->v->y - v1AtTanVO->v->y, v2AtTanVO->v->z - v1AtTanVO->v->z );
+			D3DXVec3Cross( &tmpPlaneNormal, &planV1, &planV2 );
+
+			double tmpMaxPlaneAngle = D3DXVec3Dot( &planV1, &planV2 );
+			if( tmpMaxPlaneAngle > maxPlaneAngleE1 )
+			{
+				maxPlaneAngleE1 = tmpMaxPlaneAngle;
+				resultVertex1 = currentHalfEdge->origin;
+			}
+
+			currentHalfEdge = currentHalfEdge->nextEdge->twins;
+			testVertex = currentHalfEdge->origin->v;
+		}
+
+		initialHalfEdge = v2AtTanVO->leaving;
+		currentHalfEdge = initialHalfEdge->twins;
+		testVertex = initialHalfEdge->twins->origin->v;
+		while( currentHalfEdge->nextEdge != initialHalfEdge )
+		{
+			// Find the angle between two plane
+			planV1 = D3DXVECTOR3( v2AtTanVO->v->x - testVertex->x, v2AtTanVO->v->y - testVertex->y, v2AtTanVO->v->z - testVertex->z );
+			planV2 = D3DXVECTOR3( v1AtTanVO->v->x - v2AtTanVO->v->x, v1AtTanVO->v->y - v2AtTanVO->v->y, v1AtTanVO->v->z - v2AtTanVO->v->z );
+			D3DXVec3Cross( &tmpPlaneNormal, &planV1, &planV2 );
+
+			double tmpMaxPlaneAngle = D3DXVec3Dot( &planV1, &planV2 );
+			if( tmpMaxPlaneAngle > maxPlaneAngleE2 )
+			{
+				maxPlaneAngleE2 = tmpMaxPlaneAngle;
+				resultVertex2 = currentHalfEdge->origin;
+			}
+
+			currentHalfEdge = currentHalfEdge->nextEdge->twins;
+			testVertex = currentHalfEdge->origin->v;
+		}
+
+		if( maxPlaneAngleE2 >= maxPlaneAngleE1 )
+		{
+			v2AtTanVO = resultVertex2;
+			CHCandidates.push_back( resultVertex2 );
+		}
+		else if( maxPlaneAngleE2 < maxPlaneAngleE1 )
+		{
+			v1AtTanVO = resultVertex1;
+			CHCandidates.push_back( resultVertex1 );
+		}
+	}while( vE1Start != v1AtTanVO && vE2Start != v2AtTanVO );
+
+	// Change DCEL structure
+	DCEL mergeDCEL;
+	D3DXVECTOR3 posYVec( 0.0f, 1.0f, 0.0f );
+	list<FaceObject*>::iterator faceIter;
+	list<VertexObject*> toBeDeleteVertex;
+	for( faceIter = CH1.m_Faces->begin(); faceIter != CH1.m_Faces->end(); faceIter++ )
+	{
+		VertexObject* v1, * v2, * v3;
+		v1 = (*faceIter)->attachedEdge->origin;
+		v2 = (*faceIter)->attachedEdge->nextEdge->origin;
+		v3 = (*faceIter)->attachedEdge->nextEdge->nextEdge->origin;
+
+
+		D3DXVECTOR3 curFaceNormal;
+		D3DXVec3Cross( &curFaceNormal, &D3DXVECTOR3( v2->v->x - v1->v->x, v2->v->y - v1->v->y, v2->v->z - v1->v->z ), &D3DXVECTOR3( v3->v->x - v2->v->x, v3->v->y - v2->v->y, v3->v->z - v2->v->z ) );
+		D3DXVec3Normalize( &curFaceNormal, &curFaceNormal );
+
+		// Face that inside that cylinder
+		if( D3DXVec3Dot( &posYVec, &curFaceNormal ) < 0 )
+		{
+			CH1.deleteFace( (*faceIter) );
+		}
+	}
+
+	for( faceIter = CH2.m_Faces->begin(); faceIter != CH2.m_Faces->end(); faceIter++ )
+	{
+		VertexObject* v1, * v2, * v3;
+		v1 = (*faceIter)->attachedEdge->origin;
+		v2 = (*faceIter)->attachedEdge->nextEdge->origin;
+		v3 = (*faceIter)->attachedEdge->nextEdge->nextEdge->origin;
+
+		D3DXVECTOR3 curFaceNormal;
+		D3DXVec3Cross( &curFaceNormal, &D3DXVECTOR3( v2->v->x - v1->v->x, v2->v->y - v1->v->y, v2->v->z - v1->v->z ), &D3DXVECTOR3( v3->v->x - v2->v->x, v3->v->y - v2->v->y, v3->v->z - v2->v->z ) );
+		D3DXVec3Normalize( &curFaceNormal, &curFaceNormal );
+
+		// Face that inside that cylinder
+		if( D3DXVec3Dot( &posYVec, &curFaceNormal ) > 0 )
+		{
+			CH2.deleteFace( (*faceIter) );
+		} 
+	}
+
+	return mergeDCEL;
 }

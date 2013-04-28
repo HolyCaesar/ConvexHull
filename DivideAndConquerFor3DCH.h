@@ -10,7 +10,10 @@ public:
 	~DivideAndConquerFor3DCH();
 
 public:
-	void BruceForceCH( vector<VERTEX>* pVertex );
+	DCEL BruceForceCH( vector<VERTEX>* pVertex );
 	bool RayTriangleIntersection( Ray r, TRIANGLE triangle, vector<VERTEX>* pVertex );
+	void Calculate3DConvexHull( vector<VERTEX>* pVertex );
 
+private:
+	DCEL DVCalculate3DConvexHull( vector<VERTEX>* pVertex, int startPoint, int endPoint );
 };
