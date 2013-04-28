@@ -26,6 +26,8 @@ struct VERTEX
 		x = x1;
 		y = y1;
 		z = z1;
+
+		color = D3DXVECTOR4( 0.0f, 0.0f, 0.0f, 1.0f );
 	}
 
 	VERTEX()
@@ -33,13 +35,14 @@ struct VERTEX
 		x = 0;
 		y = 0;
 		z = 0;
+
+		color = D3DXVECTOR4( 0.0f, 0.0f, 0.0f, 1.0f );
 	}
 
 	const VERTEX operator -( VERTEX p1 )
 	{
 		return VERTEX( this->x - p1.x, this->y - p1.y, this->z - p1.z );
 	}
-
 
 	// Added by Yuan Li
 	VERTEX(const VERTEX &p)

@@ -7,11 +7,29 @@ DCEL::DCEL()
 	m_Faces = new list<FaceObject*>;
 }
 
+// When return an instance of this kind in a fucntion, this constructor will be invoked and therefore we can control this phase behavior by using this constructor
 DCEL::DCEL( const DCEL& other )
 {
+	*this = other;
 }
 
 DCEL::~DCEL()
+{
+}
+
+template<class T>
+void DCEL::cleanList( list<T>* target )
+{
+	cout << target->size() << endl;
+
+	list<T>::iterator iter;
+	for( iter = target->begin(); iter != target->end(); iter++ )
+	{
+		delete *iter;
+	}
+}
+
+void DCEL::clean()
 {
 	cleanList( m_HalfEdges );
 	m_HalfEdges->clear();
@@ -26,25 +44,15 @@ DCEL::~DCEL()
 	delete m_Faces;
 }
 
-template<class T>
-void DCEL::cleanList( list<T>* target )
-{
-	list<T>::iterator iter;
-
-	for( iter = target->begin(); iter != target->end(); iter++ )
-	{
-		delete *iter;
-	}
-}
-
-void DCEL::CreateDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex )
+void DCEL::createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex )
 {
 	// Create vertexobject list for all vertices first
 	for( int i = 0; i < pVertex->size(); i++ )
 	{
 		VertexObject* vo = new VertexObject;
+		vo->v = &(*pVertex)[ i ];
 		vo->leaving = NULL;
-		m_Vertexs->push_back( vo );
+		add( vo );
 	}
 
 	// Buiuild halfedges that are belong to this current face
@@ -79,13 +87,13 @@ void DCEL::CreateDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex )
 		
 		// Create three interior halfedges, their twins will be assigned later
 		HalfedgeObject *hEdge1 = new HalfedgeObject, *hEdge2 = new HalfedgeObject, *hEdge3 = new HalfedgeObject;
-		m_HalfEdges->push_back( hEdge1 );
-		m_HalfEdges->push_back( hEdge2 );
-		m_HalfEdges->push_back( hEdge3 );
+		add( hEdge1 );
+		add( hEdge2 );
+		add( hEdge3 );
 
 		FaceObject* face = new FaceObject;
 		face->attachedEdge = hEdge1;
-		m_Faces->push_back( face );
+		add( face );
 
 		if( !pointOnePtr->leaving )
 		{
@@ -183,4 +191,27 @@ int DCEL::findVertexID( VertexObject* vertexObjcet )
 
 	// If this vertex doesn't exist
 	return -1;
+}
+
+void DCEL::deleteFace( FaceObject* faceObject )
+{
+	HalfedgeObject* faceAttachedEdge1 = faceObject->attachedEdge;
+	HalfedgeObject* faceAttachedEdge2 = faceAttachedEdge1->nextEdge;
+	HalfedgeObject* faceAttachedEdge3 = faceAttachedEdge2->nextEdge;
+
+	faceAttachedEdge1->twins->twins = NULL;
+	faceAttachedEdge2->twins->twins = NULL;
+	faceAttachedEdge3->twins->twins = NULL;
+
+	// Remove all edges that belong to this face
+	remove( faceAttachedEdge1 );
+	delete faceAttachedEdge1;
+	remove( faceAttachedEdge2 );
+	delete faceAttachedEdge2;
+	remove( faceAttachedEdge3 );
+	delete faceAttachedEdge3;
+	
+	// Remove this face
+	remove( faceObject );
+	delete faceObject;
 }

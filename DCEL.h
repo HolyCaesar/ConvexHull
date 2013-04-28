@@ -50,9 +50,10 @@ public:
 	DCEL( const DCEL& other );
 	~DCEL();
 
-	void CreateDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex );
+	void createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex );
 	void test( FaceObject* faceObject );
 	int  findVertexID( VertexObject* vertexObject );
+	void clean();
 
 	// Added by Yuan Li
 	inline void add(HalfedgeObject* e)
@@ -60,28 +61,34 @@ public:
         m_HalfEdges->push_front(e);
         e->it = m_HalfEdges->begin();
     }
+
     inline void add(VertexObject* v)
     {
         m_Vertexs->push_front(v);
         v->it = m_Vertexs->begin();
     }
+
     inline void add(FaceObject* f)
     {
         m_Faces->push_front(f);
         f->it = m_Faces->begin();
     }
+
     inline void remove(HalfedgeObject* e)
     {
         m_HalfEdges->erase(e->it);
     }
+
     inline void remove(VertexObject* v)
     {
         m_Vertexs->erase(v->it);
     }
+
     inline void remove(FaceObject* f)
     {
         m_Faces->erase(f->it);
     }
+
     friend ostream& operator << (ostream& cout, DCEL dcel)
     {
         cout << "Vertices: ";
@@ -113,8 +120,10 @@ public:
         return cout;
     }
 
-
-
+public:
+	void deleteFace( FaceObject* faceObject );
+	void deleteEdge( HalfedgeObject* edgeObject );
+	void deleteVertex( VertexObject* vertexObject );
 private:
 	template<class T>
 	void cleanList( list<T>* target );

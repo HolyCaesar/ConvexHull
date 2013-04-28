@@ -11,6 +11,7 @@
 #include <vector>
 #include <list>
 #include <set>
+#include <hash_map>
 
 /*C runtime libraries*/
 #include <assert.h>

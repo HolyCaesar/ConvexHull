@@ -8,6 +8,10 @@ Graphics::Graphics()
 	m_pModel = NULL;
 	m_pShader = NULL;
 	m_pCamera = NULL;
+
+	m_xRotation = 0.0f;
+	m_yRotation = 0.0f;
+	m_zRotation = 0.0f;
 }
 
 
@@ -66,6 +70,12 @@ bool Graphics::Initialize( int screenWidth, int screenHeight, HWND hwnd )
 	return true;
 }
 
+void Graphics::SetYawPitchRoll( float rx, float ry, float rz )
+{
+	m_xRotation += rx;
+	m_yRotation += ry;
+	m_zRotation += rz;
+}
 
 void Graphics::Shutdown()
 {
@@ -117,6 +127,13 @@ bool Graphics::D3DRender()
 	m_pCamera->getViewMatrix( viewMatrix );
 	m_pD3D->GetWorldMatrix( worldMatrix );
 	m_pD3D->GetProjectionMatrix( projectionMatrix );
+
+	/*Create rotation matrix*/
+	D3DXMATRIX rotationMatrix;
+	static float rotate = 0.0f;
+	D3DXMatrixRotationYawPitchRoll( &rotationMatrix, m_xRotation, m_yRotation, m_zRotation );
+	rotate += 0.1;
+	worldMatrix *= rotationMatrix;
 
 	/*Put the model vertex and index buffers on the graphics pipeline to prepare for rendering*/
 	m_pModel->RenderModel( m_pD3D->GetDeviceContext() );

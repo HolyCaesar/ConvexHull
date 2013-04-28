@@ -23,6 +23,8 @@ public:
 	void Shutdown();
 	bool Frame();
 
+	void SetYawPitchRoll( float rx, float ry, float rz );
+
 private:
 	bool D3DRender();
 
@@ -31,4 +33,9 @@ private:
 	Model3D *m_pModel;
 	Shader  *m_pShader;
 	Camera  *m_pCamera;
+
+private:
+	float   m_xRotation;
+	float   m_yRotation;
+	float   m_zRotation;
 };

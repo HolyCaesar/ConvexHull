@@ -121,6 +121,36 @@ bool SystemClass::Frame()
 		return false;
 	}
 
+	if( m_input->IsKeyDown( 'W' ) )
+	{
+		m_graphicsEngine->SetYawPitchRoll( 0.1, 0.0, 0.0 );
+	}
+
+	if( m_input->IsKeyDown( 'S' ) )
+	{
+		m_graphicsEngine->SetYawPitchRoll( -0.1, 0.0, 0.0 );
+	}
+
+	if( m_input->IsKeyDown( 'A' ) )
+	{
+		m_graphicsEngine->SetYawPitchRoll( 0.0, 0.1, 0.0 );
+	}
+
+	if( m_input->IsKeyDown( 'D' ) )
+	{
+		m_graphicsEngine->SetYawPitchRoll( 0.0, -0.1, 0.0 );
+	}
+
+	if( m_input->IsKeyDown( 'Q' ) )
+	{
+		m_graphicsEngine->SetYawPitchRoll( 0.0, 0.0, 0.1 );
+	}
+
+	if( m_input->IsKeyDown( 'E' ) )
+	{
+		m_graphicsEngine->SetYawPitchRoll( 0.0, 0.0, -0.1 );
+	}
+
 	/*Do the frame processing for the graphics object.*/
 	try{
 		result = m_graphicsEngine->Frame();
@@ -236,7 +266,7 @@ void SystemClass::InitializeWindows()
 	SetFocus( m_hwnd );
 
 	/*Hide the mouse cursor.*/
-	ShowCursor( false );
+	ShowCursor( true );
 }
 
 void SystemClass::ShutdownWindows()
