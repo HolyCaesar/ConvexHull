@@ -10,6 +10,8 @@ SystemClass::SystemClass()
 	m_screenHeight = 0;
 	m_fullScreen = false;
 
+	pointGeneratorMode = 1;
+	pointNumber = 100;
 	PointGenerator::seed();
 	m_testPointSet = PointGenerator::unitCube();
 	m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
@@ -161,6 +163,160 @@ bool SystemClass::Frame()
 	if( m_input->IsKeyDown( 'E' ) )
 	{
 		m_graphicsEngine->SetYawPitchRoll( 0.0, 0.0, -0.1 );
+	}
+
+	if( m_input->IsKeyDown( 'Z' ) )
+	{
+		m_graphicsEngine->Scale( 0.1f );
+	}
+
+	if( m_input->IsKeyDown( 'X' ) )
+	{
+		m_graphicsEngine->Scale( -0.1f );
+	}
+
+	if( m_input->IsKeyDown( '1' ) )
+	{
+		PointGenerator::seed();
+		if( m_testPointSet.empty() == false )
+		{
+			m_testPointSet = PointGenerator::pointsInSphere( 100 );
+		}
+
+		if( m_incrementalMethod )
+		{
+			delete m_incrementalMethod;
+		}
+
+		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
+		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+		pointGeneratorMode = 1;
+	}
+
+	if( m_input->IsKeyDown( '2' ) )
+	{
+		PointGenerator::seed();
+		if( m_testPointSet.empty() == false )
+		{
+			m_testPointSet = PointGenerator::pointsOnSphere( 100 );
+		}
+
+		if( m_incrementalMethod )
+		{
+			delete m_incrementalMethod;
+		}
+
+		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
+		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+		pointGeneratorMode = 2;
+	}
+
+	if( m_input->IsKeyDown( '3' ) )
+	{
+		PointGenerator::seed();
+		if( m_testPointSet.empty() == false )
+		{
+			m_testPointSet = PointGenerator::pointsInCube( 100 );
+		}
+
+		if( m_incrementalMethod )
+		{
+			delete m_incrementalMethod;
+		}
+
+		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
+		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+		pointGeneratorMode = 3;
+	}
+
+	if( m_input->IsKeyDown( '4' ) )
+	{
+		PointGenerator::seed();
+		if( m_testPointSet.empty() == false )
+		{
+			m_testPointSet = PointGenerator::unitCube();
+		}
+
+		if( m_incrementalMethod )
+		{
+			delete m_incrementalMethod;
+		}
+
+		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
+		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+		pointGeneratorMode = 4;
+	}
+
+	if( m_input->IsKeyDown( 'N' ) )
+	{
+		pointNumber += 10;
+		PointGenerator::seed();
+		if( m_testPointSet.empty() == false )
+		{
+			m_testPointSet.clear();
+		}
+
+		switch( pointGeneratorMode )
+		{
+		case 1:
+			m_testPointSet = PointGenerator::pointsInSphere( pointNumber );
+			break;
+		case 2:
+			m_testPointSet = PointGenerator::pointsOnSphere( pointNumber );
+			break;
+		case 3:
+			m_testPointSet = PointGenerator::pointsInCube( pointNumber );
+			break;
+		default:
+			break;
+		}
+
+		if( m_incrementalMethod )
+		{
+			delete m_incrementalMethod;
+		}
+
+		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
+		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+	}
+
+	if( m_input->IsKeyDown( 'M' ) )
+	{
+		pointNumber -= 10;
+		if( pointNumber < 5 )
+		{
+			pointNumber = 5;
+		}
+
+		PointGenerator::seed();
+		if( m_testPointSet.empty() == false )
+		{
+			m_testPointSet.clear();
+		}
+
+		switch( pointGeneratorMode )
+		{
+		case 1:
+			m_testPointSet = PointGenerator::pointsInSphere( pointNumber );
+			break;
+		case 2:
+			cout << pointNumber << endl;
+			m_testPointSet = PointGenerator::pointsOnSphere( pointNumber );
+			break;
+		case 3:
+			m_testPointSet = PointGenerator::pointsInCube( pointNumber );
+			break;
+		default:
+			break;
+		}
+
+		if( m_incrementalMethod )
+		{
+			delete m_incrementalMethod;
+		}
+
+		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
+		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
 	}
 
 	/*Do the frame processing for the graphics object.*/

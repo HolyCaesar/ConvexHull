@@ -235,7 +235,6 @@ class IncrementalHull3DFast
         GV _f2 = (GV)f2->data;
 
         if (f1->normal == f->normal) {
-            cout << "coplanar" << endl;
             for (set<VertexObject*>::iterator i=_f1->begin(); i!=_f1->end(); i++) {
                 _f->insert(*i);
                 GF gf = (GF)(*i)->data;

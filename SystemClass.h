@@ -47,6 +47,14 @@ private:
 private:
 	vector<VERTEX> m_testPointSet;
 	IncrementalHull3DFast* m_incrementalMethod;
+
+	/*
+	* 1. pointGeneratorMode = 1 means Insphere mode
+	* 2. pointGeneratorMode = 2 means Onsphere mode
+	* 3. pointGeneratorMode = 3 means Incude mode
+	*/
+	unsigned int pointGeneratorMode;
+	int pointNumber;
 };
 
 static LRESULT CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM );

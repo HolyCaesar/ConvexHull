@@ -12,20 +12,19 @@ Graphics::Graphics()
 	m_xRotation = 0.0f;
 	m_yRotation = 0.0f;
 	m_zRotation = 0.0f;
-}
 
+	m_scale     = 1.0f;
+}
 
 Graphics::Graphics( const Graphics& other )
 {
 
 }
 
-
 Graphics::~Graphics()
 {
 
 }
-
 
 bool Graphics::Initialize( int screenWidth, int screenHeight, HWND hwnd )
 {
@@ -131,7 +130,7 @@ bool Graphics::D3DRender()
 	/*Create rotation matrix*/
 	D3DXMATRIX rotationMatrix, scaleMatrix;
 	D3DXMatrixRotationYawPitchRoll( &rotationMatrix, m_xRotation, m_yRotation, m_zRotation );
-	D3DXMatrixScaling( &scaleMatrix, 2.0f, 2.0f, 2.0f );
+	D3DXMatrixScaling( &scaleMatrix, m_scale, m_scale, m_scale );
 	worldMatrix *= scaleMatrix * rotationMatrix;
 
 	/*Put the model vertex and index buffers on the graphics pipeline to prepare for rendering*/
@@ -148,4 +147,9 @@ bool Graphics::D3DRender()
 void Graphics::SetModelData( DCEL* CHModel )
 {
 	m_pModel->UpdateModelData( m_pD3D->GetDevice(), CHModel );
+}
+
+void Graphics::Scale( float factor )
+{
+	m_scale += factor;
 }

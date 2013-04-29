@@ -25,6 +25,7 @@ public:
 	bool Frame();
 
 	void SetYawPitchRoll( float rx, float ry, float rz );
+	void Scale( float factor );
 	void SetModelData( DCEL* CHModel );
 
 private:
@@ -40,4 +41,6 @@ private:
 	float   m_xRotation;
 	float   m_yRotation;
 	float   m_zRotation;
+
+	float   m_scale;
 };
