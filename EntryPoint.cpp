@@ -30,17 +30,12 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	
 	UseConsole();
 
-	int n = 20;
-	PointGenerator::seed();
-    vector<VERTEX> a = PointGenerator::pointsInCube(n);
-    cout << "algorithm begins!" << endl;
-    IncrementalHull3DFast rjb(a);
-	
-//    DivideAndConquer rjb(a);
-	cout << rjb.dcel << endl;
-
-
-
+	//int n = 20;
+	//PointGenerator::seed();
+ //   vector<VERTEX> a = PointGenerator::pointsInCube(n);
+ //   cout << "algorithm begins!" << endl;
+ //   IncrementalHull3DFast rjb(a);
+	//cout << rjb.dcel << endl;
 
 	// Create the system object.
 	System = new SystemClass;
@@ -55,16 +50,6 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	{
 		System->Run();
 	}
-
-
-	
-	
-
-
-
-
-
-
 
 	// Shutdown and release the system object.
 	System->Shutdown();

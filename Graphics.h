@@ -9,6 +9,7 @@
 #include "3DModel.h"
 #include "Camera.h"
 #include "Shader.h"
+#include "DCEL.h"
 
 #pragma warning( once : 4005 )
 
@@ -24,6 +25,7 @@ public:
 	bool Frame();
 
 	void SetYawPitchRoll( float rx, float ry, float rz );
+	void SetModelData( DCEL* CHModel );
 
 private:
 	bool D3DRender();

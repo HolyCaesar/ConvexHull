@@ -39,6 +39,13 @@ struct VERTEX
 		color = D3DXVECTOR4( 0.0f, 0.0f, 0.0f, 1.0f );
 	}
 
+	void operator *=( float factors )
+	{
+		x *= factors;
+		y *= factors;
+		z *= factors;
+	}
+
 	const VERTEX operator -( VERTEX p1 )
 	{
 		return VERTEX( this->x - p1.x, this->y - p1.y, this->z - p1.z );
@@ -49,6 +56,7 @@ struct VERTEX
 	{
 		*this = p;
 	}
+
 	bool operator == (const VERTEX &p) const
 	{
 		return fabs(x - p.x) < EPS && fabs(y - p.y) < EPS && fabs(z - p.z) < EPS;

@@ -9,6 +9,8 @@
 #include "Header.h"
 #include "Input.h"
 #include "Graphics.h"
+#include "PointGenerator.h"
+#include "IncrementalHull3DFast.h"
 
 class SystemClass
 {
@@ -25,6 +27,7 @@ public:
 
 private:
 	bool Frame();
+	void ComputeCH();
 	void InitializeWindows();
 	void ShutdownWindows();
 
@@ -40,6 +43,10 @@ private:
 
 	Input* m_input;
 	Graphics* m_graphicsEngine;
+
+private:
+	vector<VERTEX> m_testPointSet;
+	IncrementalHull3DFast* m_incrementalMethod;
 };
 
 static LRESULT CALLBACK WndProc( HWND, UINT, WPARAM, LPARAM );

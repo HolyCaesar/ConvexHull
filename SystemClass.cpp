@@ -1,4 +1,5 @@
 #include "SystemClass.h"
+#include "DCEL.h"
 using namespace std;
 
 SystemClass::SystemClass()
@@ -8,6 +9,10 @@ SystemClass::SystemClass()
 	m_screenWidth = 0;
 	m_screenHeight = 0;
 	m_fullScreen = false;
+
+	PointGenerator::seed();
+	m_testPointSet = PointGenerator::unitCube();
+	m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
 }
 
 SystemClass::SystemClass( const SystemClass& other )
@@ -50,7 +55,9 @@ bool SystemClass::Initialize()
 	{
 		return false;
 	}
-	
+
+	m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+
 	return true;
 }
 
@@ -109,6 +116,11 @@ void SystemClass::Run()
 			}
 		}
 	}
+}
+
+void SystemClass::ComputeCH()
+{
+
 }
 
 bool SystemClass::Frame()

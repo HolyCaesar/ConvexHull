@@ -129,11 +129,10 @@ bool Graphics::D3DRender()
 	m_pD3D->GetProjectionMatrix( projectionMatrix );
 
 	/*Create rotation matrix*/
-	D3DXMATRIX rotationMatrix;
-	static float rotate = 0.0f;
+	D3DXMATRIX rotationMatrix, scaleMatrix;
 	D3DXMatrixRotationYawPitchRoll( &rotationMatrix, m_xRotation, m_yRotation, m_zRotation );
-	rotate += 0.1;
-	worldMatrix *= rotationMatrix;
+	D3DXMatrixScaling( &scaleMatrix, 2.0f, 2.0f, 2.0f );
+	worldMatrix *= scaleMatrix * rotationMatrix;
 
 	/*Put the model vertex and index buffers on the graphics pipeline to prepare for rendering*/
 	m_pModel->RenderModel( m_pD3D->GetDeviceContext() );
@@ -144,4 +143,9 @@ bool Graphics::D3DRender()
 	/*Present the rendered scene to the screen.*/
 	m_pD3D->EndScene();
 	return true;
+}
+
+void Graphics::SetModelData( DCEL* CHModel )
+{
+	m_pModel->UpdateModelData( m_pD3D->GetDevice(), CHModel );
 }

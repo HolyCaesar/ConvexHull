@@ -2,6 +2,7 @@
 
 #include <d3d11.h>
 #include <D3DX10math.h>
+#include "DCEL.h"
 
 class Model3D
 {
@@ -13,6 +14,7 @@ public:
 	bool Initialize( ID3D11Device* );
 	void ShutDown();
 	void RenderModel( ID3D11DeviceContext* );
+	bool UpdateModelData( ID3D11Device* device, DCEL* CHModel );
 
 	int GetIndexCount();
 
