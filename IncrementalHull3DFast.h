@@ -31,7 +31,11 @@ class IncrementalHull3DFast
     set<FaceObject*> faceToBeDel;
     vector<HalfedgeObject*> tmpHalfedge;
     int current;
+	list<VertexObject*> trashV;
+	list<HalfedgeObject*> trashE;
+	list<FaceObject*> trashF;
     
+
 
     
     
@@ -206,6 +210,8 @@ class IncrementalHull3DFast
 		for (int i=0; i<3; i++)
 		{
 			dcel.remove(e);
+			trashE.push_back(e);
+
 			if (!isConflict(e->twins->attachedFace, p))
 			{
                 current = e->origin->v->id;
@@ -218,12 +224,15 @@ class IncrementalHull3DFast
 			if (outDegree[e->origin->v->id] == 0)
             {
                 dcel.remove(e->origin);
+				trashV.push_back(e->origin);
+				
             }
             
             e = e->nextEdge;
 		}
         
         dcel.remove(f);
+		trashF.push_back(f);
     }
     
     // f is the new face
@@ -298,9 +307,19 @@ public:
     DCEL dcel;
 	bool isDegenerate;
     
-	IncrementalHull3DFast(const vector<VERTEX> &p)
+	~IncrementalHull3DFast(void)
 	{
-		a = p;
+		for (list<VertexObject*>::iterator i=trashV.begin(); i!=trashV.end(); i++)
+			delete *i;
+		for (list<HalfedgeObject*>::iterator i=trashE.begin(); i!=trashE.end(); i++)
+			delete *i;
+		for (list<FaceObject*>::iterator i=trashF.begin(); i!=trashF.end(); i++)
+			delete *i;
+		dcel.clean();
+	}
+
+	IncrementalHull3DFast(const vector<VERTEX> &p)
+	{		a = p;
         outDegree = vector<int>(a.size());
         next = vector<int>(a.size());
         tmp = vector<int>(a.size());
