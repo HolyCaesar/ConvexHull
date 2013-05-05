@@ -7,19 +7,6 @@ struct HalfedgeObject;
 struct VertexObject;
 struct FaceObject;
 
-/*DCEL Structures*/
-struct HalfedgeObject
-{
-	VertexObject*   origin;
-	FaceObject*     attachedFace;
-	HalfedgeObject* twins;
-	HalfedgeObject* nextEdge;
-	HalfedgeObject* preEdge;
-
-	// Added by Yuan Li, for deletion
-	list<HalfedgeObject*>::iterator it;
-    bool visited;
-};
 
 struct VertexObject
 {
@@ -34,6 +21,30 @@ struct VertexObject
     bool visited;
 };
 
+
+/*DCEL Structures*/
+struct HalfedgeObject
+{
+	VertexObject*   origin;
+	FaceObject*     attachedFace;
+	HalfedgeObject* twins;
+	HalfedgeObject* nextEdge;
+	HalfedgeObject* preEdge;
+
+	// Added by Yuan Li, for deletion
+	list<HalfedgeObject*>::iterator it;
+    bool visited;
+	friend ostream& operator <<(ostream &cout, HalfedgeObject *edge)
+	{
+		assert(edge->twins->origin == edge->nextEdge->origin);
+
+		cout << edge->origin->v->id << ' ' << edge->twins->origin->v->id;
+		return cout;
+	}
+};
+
+
+
 struct FaceObject
 {
 	HalfedgeObject* attachedEdge;
@@ -44,6 +55,13 @@ struct FaceObject
 	void* data;
     bool isDeleted;
     FaceObject() { isDeleted = false; }
+	friend ostream& operator <<(ostream &cout, FaceObject *face)
+	{
+		HalfedgeObject* e = face->attachedEdge;
+		for (int i=0; i<3; i++, e = e->nextEdge)
+			cout << e->origin->v->id << ' ';
+		return cout;
+	}
 };
 
 class DCEL
@@ -58,6 +76,25 @@ public:
 	DCEL( const DCEL& other );
 	~DCEL();
 
+	void fixIterator(void)
+	{
+		for (list<VertexObject*>::iterator i=m_Vertexs->begin(); i!=m_Vertexs->end(); i++)
+			(*i)->it = i;
+		for (list<HalfedgeObject*>::iterator i=m_HalfEdges->begin(); i!=m_HalfEdges->end(); i++)
+			(*i)->it = i;
+		for (list<FaceObject*>::iterator i=m_Faces->begin(); i!=m_Faces->end(); i++)
+			(*i)->it = i;
+	}
+	bool checkIterators(void)
+	{
+		for (list<VertexObject*>::iterator i=m_Vertexs->begin(); i!=m_Vertexs->end(); i++)
+			if (i != (*i)->it) return false;
+		for (list<HalfedgeObject*>::iterator i=m_HalfEdges->begin(); i!=m_HalfEdges->end(); i++)
+			if (i != (*i)->it) return false;
+		for (list<FaceObject*>::iterator i=m_Faces->begin(); i!=m_Faces->end(); i++)
+			if (i != (*i)->it) return false;
+		return true;
+	}
 	void unsetVisited(void)
 	{
 		for (list<HalfedgeObject*>::iterator i=m_HalfEdges->begin(); i!=m_HalfEdges->end(); i++)
@@ -108,6 +145,11 @@ public:
         m_Faces->erase(f->it);
     }
 
+	inline bool isExisted(HalfedgeObject *e)
+	{
+		return find(m_HalfEdges->begin(), m_HalfEdges->end(), e) != m_HalfEdges->end();
+	}
+
     friend ostream& operator << (ostream& cout, DCEL dcel)
     {
         cout << "Vertices: ";
@@ -118,8 +160,13 @@ public:
         cout << "Edges:\n";
         for (list<HalfedgeObject*>::iterator i=dcel.m_HalfEdges->begin(); i!=dcel.m_HalfEdges->end(); i++)
         {
-            HalfedgeObject* e = *i;
-            cout << e->origin->v->id << "->" << e->twins->origin->v->id << endl;
+			HalfedgeObject* e = *i;
+			assert(dcel.isExisted(e));
+			assert(dcel.isExisted(e->twins));
+			assert(dcel.isExisted(e->nextEdge));
+			assert(dcel.isExisted(e->preEdge));
+
+			cout << e << ", twin = " << e->twins << ", next = " << e->nextEdge << ", pre = " << e->preEdge << endl;
         }
         cout << endl;
         

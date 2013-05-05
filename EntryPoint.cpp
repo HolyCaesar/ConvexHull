@@ -68,7 +68,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	//delete System;
 	//System = 0;
 
-	vector<VERTEX> pointSet = PointGenerator::pointsOnSphere( 25 );
+	vector<VERTEX> pointSet = PointGenerator::pointsOnSphere( 100 );
 	sort( pointSet.begin(), pointSet.end(), cmp );
 
 	//list<VertexObject*> p;
