@@ -24,12 +24,13 @@ struct HalfedgeObject
 struct VertexObject
 {
 	HalfedgeObject* leaving;
+	// 0 unvisited, 1 remain, 2 deleted
+	int  status;
 
 	// Added by Yuan Li
 	VERTEX *v;
 	list<VertexObject*>::iterator it;
 	void* data;
-
     bool visited;
 };
 
@@ -57,28 +58,39 @@ public:
 	DCEL( const DCEL& other );
 	~DCEL();
 
-	void createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex );
+	void unsetVisited(void)
+	{
+		for (list<HalfedgeObject*>::iterator i=m_HalfEdges->begin(); i!=m_HalfEdges->end(); i++)
+			(*i)->visited = false;
+		for (list<FaceObject*>::iterator i=m_Faces->begin(); i!=m_Faces->end(); i++)
+			(*i)->isDeleted = false;
+		for (list<VertexObject*>::iterator i=m_Vertexs->begin(); i!=m_Vertexs->end(); i++)
+			(*i)->visited = false;
+	}
+	void createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX*>* pVertex, const unsigned int offset );
 	void test( FaceObject* faceObject );
-	int  findVertexID( VertexObject* vertexObject );
 	void clean();
 
 	// Added by Yuan Li
 	inline void add(HalfedgeObject* e)
     {
-        m_HalfEdges->push_front(e);
-        e->it = m_HalfEdges->begin();
+        m_HalfEdges->push_back(e);
+        e->it = m_HalfEdges->end();
+		e->it--; 
     }
 
     inline void add(VertexObject* v)
     {
-        m_Vertexs->push_front(v);
-        v->it = m_Vertexs->begin();
-    }
+        m_Vertexs->push_back(v);
+        v->it = m_Vertexs->end();
+		v->it--;
+	}
 
     inline void add(FaceObject* f)
     {
-        m_Faces->push_front(f);
-        f->it = m_Faces->begin();
+        m_Faces->push_back(f);
+        f->it = m_Faces->end();
+		f->it--;
     }
 
     inline void remove(HalfedgeObject* e)
@@ -130,7 +142,6 @@ public:
 public:
 	void deleteFace( FaceObject* faceObject );
 	void deleteEdge( HalfedgeObject* edgeObject );
-	void deleteVertex( VertexObject* vertexObject );
 private:
 	template<class T>
 	void cleanList( list<T>* target );

@@ -44,17 +44,19 @@ void DCEL::clean()
 	delete m_Faces;
 }
 
-void DCEL::createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex )
+void DCEL::createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX*>* pVertex, const unsigned int offset )
 {
 	// Create vertexobject list for all vertices first
 	for( int i = 0; i < pVertex->size(); i++ )
 	{
 		VertexObject* vo = new VertexObject;
-		vo->v = &(*pVertex)[ i ];
+		vo->v = (*pVertex)[ i ];
+		vo->status = 0;
+		vo->v->id = offset + i;
 		vo->leaving = NULL;
 		add( vo );
 	}
-
+	
 	// Buiuild halfedges that are belong to this current face
 	for( int i = 0; i < pTriangles->size(); i++ )
 	{
@@ -135,7 +137,7 @@ void DCEL::createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX>* pVertex )
 		{
 			for( tmp_list_iter = m_HalfEdges->begin(); tmp_list_iter != m_HalfEdges->end(); tmp_list_iter++ )
 			{
-				if( (*tmp_list_iter)->nextEdge->origin == (*list_iter)->origin )
+				if( (*tmp_list_iter)->nextEdge->origin == (*list_iter)->origin && (*list_iter)->nextEdge->origin == (*tmp_list_iter)->origin)
 				{
 					(*tmp_list_iter)->twins = (*list_iter);
 					(*list_iter)->twins = (*tmp_list_iter);
@@ -171,26 +173,9 @@ void DCEL::test( FaceObject* faceObject )
 	VertexObject* thirdVertexObject = halfedgeObject->nextEdge->nextEdge->origin;
 
 	// Print out all vertices that belong to this face
-	cout << "This face is consist of point " << findVertexID( firstVertexObject ) 
-		 << " ," << findVertexID( secondVertexObject )
-		 << " and " << findVertexID( thirdVertexObject ) << endl;
-}
-
-int DCEL::findVertexID( VertexObject* vertexObjcet )
-{
-	list<VertexObject*>::iterator iter;
-
-	int count = 0;
-	for( iter = m_Vertexs->begin(); iter != m_Vertexs->end(); iter++, count++ )
-	{
-		if( *iter == vertexObjcet )
-		{
-			return count;
-		}
-	}
-
-	// If this vertex doesn't exist
-	return -1;
+	//cout << "This face is consist of point " << findVertexID( firstVertexObject ) 
+	//	 << " ," << findVertexID( secondVertexObject )
+	//	 << " and " << findVertexID( thirdVertexObject ) << endl;
 }
 
 void DCEL::deleteFace( FaceObject* faceObject )
@@ -199,19 +184,14 @@ void DCEL::deleteFace( FaceObject* faceObject )
 	HalfedgeObject* faceAttachedEdge2 = faceAttachedEdge1->nextEdge;
 	HalfedgeObject* faceAttachedEdge3 = faceAttachedEdge2->nextEdge;
 
-	faceAttachedEdge1->twins->twins = NULL;
-	faceAttachedEdge2->twins->twins = NULL;
-	faceAttachedEdge3->twins->twins = NULL;
-
 	// Remove all edges that belong to this face
 	remove( faceAttachedEdge1 );
-	delete faceAttachedEdge1;
+	//delete faceAttachedEdge1;
 	remove( faceAttachedEdge2 );
-	delete faceAttachedEdge2;
+	//delete faceAttachedEdge2;
 	remove( faceAttachedEdge3 );
-	delete faceAttachedEdge3;
+	//delete faceAttachedEdge3;
 	
 	// Remove this face
 	remove( faceObject );
-	delete faceObject;
 }

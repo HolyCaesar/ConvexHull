@@ -10,10 +10,12 @@ public:
 	~DivideAndConquerFor3DCH();
 
 public:
-	DCEL BruceForceCH( vector<VERTEX>* pVertex );
-	bool RayTriangleIntersection( Ray r, TRIANGLE triangle, vector<VERTEX>* pVertex );
-	void Calculate3DConvexHull( vector<VERTEX>* pVertex );
-
+	DCEL BruceForceCH( vector<VERTEX*>* pVertex, const unsigned int offset );
+	DCEL DVCalculate3DConvexHull( vector<VERTEX>* pVertex, const int startPoint, const int endPoint, const unsigned int offset );
+	vector<VertexObject*> find2DConvexHull( list<VertexObject*> *pointSet );
+	void findTangentFor3DCHs( vector<VertexObject*>* ch_one, vector<VertexObject*>* ch_two, VertexObject** ch1_cand, VertexObject** ch2_cand );
 private:
-	DCEL DVCalculate3DConvexHull( vector<VERTEX>* pVertex, int startPoint, int endPoint );
+	bool RayTriangleIntersection( Ray r, TRIANGLE triangle, const vector<VERTEX*>* pVertex );
+	bool isNormal( Ray r, TRIANGLE triangle, const vector<VERTEX*>* pVertex );
+	void recursivelyDeleteFace(FaceObject* face, DCEL *dcel);
 };

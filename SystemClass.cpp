@@ -24,7 +24,7 @@ SystemClass::SystemClass( const SystemClass& other )
 
 SystemClass::~SystemClass()
 {
-
+	delete m_incrementalMethod;
 }
 
 bool SystemClass::Initialize()
