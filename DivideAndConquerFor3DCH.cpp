@@ -350,8 +350,7 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	vector<candidateList> CHCandidates;
 	CHCandidates.push_back( candidateList( v1AtTanVO, 0, NULL ) );
 	CHCandidates.push_back( candidateList( v2AtTanVO, 1, NULL ) );
-    
-
+   
 
 	/*
 	* Find triangulation T
@@ -454,7 +453,6 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	////////////////////////////////////////////////////////////////
 
 
-
 	/*
 	* Construct DCEL based on the CHCandidates
 	*/
@@ -552,73 +550,72 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	list<FaceObject*>::iterator faceIter, tmpFaceIter;
 
 	cout << "开始删除三角形" << endl;
-	for (int i=2; i<(int)CHCandidates.size(); i++)
+	for ( int i = 2; i < (int)CHCandidates.size(); i++ )
 	{
 		if ( CHCandidates[ i ].belonging == 0)
-			recursivelyDeleteFace( CHCandidates[ i ].candidateEdge->attachedFace, &CH1);
+			recursivelyDeleteFace( CHCandidates[ i ].candidateEdge->attachedFace, &CH1 );
 		else 
-			recursivelyDeleteFace( CHCandidates[ i ].candidateEdgeTwin->attachedFace, &CH2);
+			recursivelyDeleteFace( CHCandidates[ i ].candidateEdgeTwin->attachedFace, &CH2 );
 	}
-	cout << "I am here" << endl;
-	/*
-	D3DXVECTOR3 posYVec( 0.0f, 1.0f, 0.0f );
 	
-	for( faceIter = CH1.m_Faces->begin(); faceIter != CH1.m_Faces->end(); )
-	{
-		VertexObject* v1, * v2, * v3;
-		v1 = (*faceIter)->attachedEdge->origin;
-		v2 = (*faceIter)->attachedEdge->nextEdge->origin;
-		v3 = (*faceIter)->attachedEdge->nextEdge->nextEdge->origin;
+	//D3DXVECTOR3 posYVec( 0.0f, 1.0f, 0.0f );
+	//
+	//for( faceIter = CH1.m_Faces->begin(); faceIter != CH1.m_Faces->end(); )
+	//{
+	//	VertexObject* v1, * v2, * v3;
+	//	v1 = (*faceIter)->attachedEdge->origin;
+	//	v2 = (*faceIter)->attachedEdge->nextEdge->origin;
+	//	v3 = (*faceIter)->attachedEdge->nextEdge->nextEdge->origin;
 
-		D3DXVECTOR3 curFaceNormal;
-		D3DXVec3Cross( &curFaceNormal, &D3DXVECTOR3( v2->v->x - v1->v->x, v2->v->y - v1->v->y, v2->v->z - v1->v->z ), &D3DXVECTOR3( v3->v->x - v2->v->x, v3->v->y - v2->v->y, v3->v->z - v2->v->z ) );
-		D3DXVec3Normalize( &curFaceNormal, &curFaceNormal );
+	//	D3DXVECTOR3 curFaceNormal;
+	//	D3DXVec3Cross( &curFaceNormal, &D3DXVECTOR3( v2->v->x - v1->v->x, v2->v->y - v1->v->y, v2->v->z - v1->v->z ), &D3DXVECTOR3( v3->v->x - v2->v->x, v3->v->y - v2->v->y, v3->v->z - v2->v->z ) );
+	//	D3DXVec3Normalize( &curFaceNormal, &curFaceNormal );
 
-		// Face that inside that cylinder
-		if( D3DXVec3Dot( &posYVec, &curFaceNormal ) < 0 )
-		{
-			if( v1->status != 1 ) v1->status = 2;
-			if( v2->status != 1 ) v2->status = 2;
-			if( v3->status != 1 ) v3->status = 2;
+	//	// Face that inside that cylinder
+	//	if( D3DXVec3Dot( &posYVec, &curFaceNormal ) < 0 )
+	//	{
+	//		if( v1->status != 1 ) v1->status = 2;
+	//		if( v2->status != 1 ) v2->status = 2;
+	//		if( v3->status != 1 ) v3->status = 2;
 
-			tmpFaceIter = faceIter++;
-			CH1.deleteFace( (*tmpFaceIter) );
-			//CH1.remove( (*faceIter) );
-		}
-		else
-		{
-			faceIter++;
-		}
-	}
+	//		tmpFaceIter = faceIter++;
+	//		CH1.deleteFace( (*tmpFaceIter) );
+	//		//CH1.remove( (*faceIter) );
+	//	}
+	//	else
+	//	{
+	//		faceIter++;
+	//	}
+	//}
 
-	for( faceIter = CH2.m_Faces->begin(); faceIter != CH2.m_Faces->end();  )
-	{
-		VertexObject* v1, * v2, * v3;
-		v1 = (*faceIter)->attachedEdge->origin;
-		v2 = (*faceIter)->attachedEdge->nextEdge->origin;
-		v3 = (*faceIter)->attachedEdge->nextEdge->nextEdge->origin;
+	//for( faceIter = CH2.m_Faces->begin(); faceIter != CH2.m_Faces->end();  )
+	//{
+	//	VertexObject* v1, * v2, * v3;
+	//	v1 = (*faceIter)->attachedEdge->origin;
+	//	v2 = (*faceIter)->attachedEdge->nextEdge->origin;
+	//	v3 = (*faceIter)->attachedEdge->nextEdge->nextEdge->origin;
 
-		D3DXVECTOR3 curFaceNormal;
-		D3DXVec3Cross( &curFaceNormal, &D3DXVECTOR3( v2->v->x - v1->v->x, v2->v->y - v1->v->y, v2->v->z - v1->v->z ), &D3DXVECTOR3( v3->v->x - v2->v->x, v3->v->y - v2->v->y, v3->v->z - v2->v->z ) );
-		D3DXVec3Normalize( &curFaceNormal, &curFaceNormal );
+	//	D3DXVECTOR3 curFaceNormal;
+	//	D3DXVec3Cross( &curFaceNormal, &D3DXVECTOR3( v2->v->x - v1->v->x, v2->v->y - v1->v->y, v2->v->z - v1->v->z ), &D3DXVECTOR3( v3->v->x - v2->v->x, v3->v->y - v2->v->y, v3->v->z - v2->v->z ) );
+	//	D3DXVec3Normalize( &curFaceNormal, &curFaceNormal );
 
-		// Face that inside that cylinder
-		if( D3DXVec3Dot( &posYVec, &curFaceNormal ) > 0 )
-		{
-			if( v1->status != 1 ) v1->status = 2;
-			if( v2->status != 1 ) v2->status = 2;
-			if( v3->status != 1 ) v3->status = 2;
+	//	// Face that inside that cylinder
+	//	if( D3DXVec3Dot( &posYVec, &curFaceNormal ) > 0 )
+	//	{
+	//		if( v1->status != 1 ) v1->status = 2;
+	//		if( v2->status != 1 ) v2->status = 2;
+	//		if( v3->status != 1 ) v3->status = 2;
 
-			tmpFaceIter = faceIter++;
-			CH2.deleteFace( (*tmpFaceIter) );
-			//CH2.remove( (*faceIter ) );
-		} 
-		else
-		{
-			faceIter++;
-		}
-	}
-	*/
+	//		tmpFaceIter = faceIter++;
+	//		CH2.deleteFace( (*tmpFaceIter) );
+	//		//CH2.remove( (*faceIter ) );
+	//	} 
+	//	else
+	//	{
+	//		faceIter++;
+	//	}
+	//}
+	//
 
 	// Delete points with status delete
 	list<VertexObject*>::iterator vexIter, tmpVexIter;
@@ -678,7 +675,6 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 		CH1.add( tmpFaces[ i ]->attachedEdge->nextEdge->nextEdge );
 	}
 
-//	cout << "软jb说merge怎么可能会死呢？" << endl;
 	return CH1;
 }
 
@@ -881,7 +877,7 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 
 void DivideAndConquerFor3DCH::recursivelyDeleteFace(FaceObject* face, DCEL *dcel)
 {
-	if (face->isDeleted) return;
+	if ( face->isDeleted ) return;
 
 	face->isDeleted = true;
 	HalfedgeObject *e1 = face->attachedEdge;
@@ -895,7 +891,7 @@ void DivideAndConquerFor3DCH::recursivelyDeleteFace(FaceObject* face, DCEL *dcel
 	//cout << v1->status << ' ' << v2->status << ' ' << v3->status << endl;
 
 	
-	for (int i=0; i<3; i++, e1 = e1->nextEdge)
+	for ( int i = 0; i < 3; i++, e1 = e1->nextEdge )
 	{
 		//cout << "Edge = " << e1->origin->v->id << ' ' << e1->twins->origin->v->id << endl;
 

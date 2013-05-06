@@ -165,19 +165,6 @@ void DCEL::findPreNextEdges( VertexObject* refVertex, VertexObject* targetVertex
 	}
 }
 
-void DCEL::test( FaceObject* faceObject )
-{
-	HalfedgeObject* halfedgeObject = faceObject->attachedEdge;
-	VertexObject* firstVertexObject = halfedgeObject->origin;
-	VertexObject* secondVertexObject = halfedgeObject->nextEdge->origin;
-	VertexObject* thirdVertexObject = halfedgeObject->nextEdge->nextEdge->origin;
-
-	// Print out all vertices that belong to this face
-	//cout << "This face is consist of point " << findVertexID( firstVertexObject ) 
-	//	 << " ," << findVertexID( secondVertexObject )
-	//	 << " and " << findVertexID( thirdVertexObject ) << endl;
-}
-
 void DCEL::deleteFace( FaceObject* faceObject )
 {
 	HalfedgeObject* faceAttachedEdge1 = faceObject->attachedEdge;

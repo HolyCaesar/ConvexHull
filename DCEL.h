@@ -68,7 +68,6 @@ public:
 			(*i)->visited = false;
 	}
 	void createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX*>* pVertex, const unsigned int offset );
-	void test( FaceObject* faceObject );
 	void clean();
 
 	// Added by Yuan Li
