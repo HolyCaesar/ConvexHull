@@ -69,13 +69,21 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	//System = 0;
 
 	vector<VERTEX> pointSet = PointGenerator::pointsOnSphere( 100 );
-	sort( pointSet.begin(), pointSet.end(), cmp );
 
+	IncrementalHull3DFast rjb(pointSet);
+	cout << rjb.dcel << endl;
+
+
+
+	sort( pointSet.begin(), pointSet.end(), cmp );
+	//for (int i=0; i<pointSet.size(); i++)
+	//	cout << pointSet[i] << endl;
+	//char jb; cin >> jb;
 
 	DivideAndConquerFor3DCH dc;
 	DCEL dcel = dc.DVCalculate3DConvexHull( &pointSet, 0, pointSet.size() - 1, 0 );
-
 	cout << dcel << endl;
+
 	int a;
 	cin >> a;
 

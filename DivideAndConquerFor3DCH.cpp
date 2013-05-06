@@ -1,6 +1,5 @@
 #include "DivideAndConquerFor3DCH.h"
 
-const float eps = 0.000001;
 
 DivideAndConquerFor3DCH::DivideAndConquerFor3DCH()
 {
@@ -250,6 +249,8 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 
 	CH1.unsetVisited();
 	CH2.unsetVisited();
+	/*cout << CH1 << endl; char rjb; cin >> rjb; 
+	cout << CH2 << endl; cin >> rjb; */
 
 	/*
 	* Phase 2: Merge two convex hulls
@@ -289,7 +290,8 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 		}
 	}
 	
-	// test
+//	 test
+	//cout << "ÇÐÏßÊÇ " << v1AtTanVO->v->id << ' ' << v2AtTanVO->v->id << endl;
 	//for (list<VertexObject*>::iterator it=CH1.m_Vertexs->begin(); it!=CH1.m_Vertexs->end(); it++)
 	//{
 	//	D3DXVECTOR3 v((*it)->v->x - v1AtTanVO->v->x, (*it)->v->y - v1AtTanVO->v->y, (*it)->v->z - v1AtTanVO->v->z);
@@ -361,6 +363,12 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 
 		do
 		{
+			if (currentHalfEdge->visited)
+			{
+				currentHalfEdge = currentHalfEdge->twins->nextEdge;
+				testVertex = currentHalfEdge->twins->origin;
+				continue;
+			}
 			// Find the angle between two plane
 			planV1 = D3DXVECTOR3( v1AtTanVO->v->x - testVertex->v->x, v1AtTanVO->v->y - testVertex->v->y, v1AtTanVO->v->z - testVertex->v->z );
 			planV2 = D3DXVECTOR3( v2AtTanVO->v->x - v1AtTanVO->v->x, v2AtTanVO->v->y - v1AtTanVO->v->y, v2AtTanVO->v->z - v1AtTanVO->v->z );
@@ -384,6 +392,13 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 		testVertex = currentHalfEdge->twins->origin;
 		do
 		{
+			if (currentHalfEdge->visited)
+			{
+				currentHalfEdge = currentHalfEdge->twins->nextEdge;
+				testVertex = currentHalfEdge->twins->origin;
+				continue;
+			}
+
 			// Find the angle between two plane
 			planV1 = D3DXVECTOR3( v2AtTanVO->v->x - testVertex->v->x, v2AtTanVO->v->y - testVertex->v->y, v2AtTanVO->v->z - testVertex->v->z );
 			planV2 = D3DXVECTOR3( v1AtTanVO->v->x - v2AtTanVO->v->x, v1AtTanVO->v->y - v2AtTanVO->v->y, v1AtTanVO->v->z - v2AtTanVO->v->z );
@@ -408,6 +423,7 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 			v1AtTanVO = resultVertex1;
 			v1AtTanVO->status = 1;
 			planeNormal = maxTmpPlaneNormal1;
+			resultEdge1->visited = true;
 			CHCandidates.push_back( candidateList( resultVertex1, 0, resultEdge1 ) );
 
 		}
@@ -416,9 +432,11 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 			v2AtTanVO = resultVertex2;
 			v2AtTanVO->status = 1;
 			planeNormal = maxTmpPlaneNormal2;
+			resultEdge2->visited = true;
 			CHCandidates.push_back( candidateList( resultVertex2, 1, resultEdge2 ) );
 		}
 	}while( vE1Start != v1AtTanVO || vE2Start != v2AtTanVO );
+
 
 	/*
 	* Change DCEL structure, delete the face, halfedges and vertices inside the new convex hull
@@ -592,6 +610,8 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	CH1.m_Vertexs->splice( CH1.m_Vertexs->end(), *CH2.m_Vertexs );
 
 	CH1.fixIterator();
+	CH1.removeUselessVertices();
+	CH1.fixIterator();
 	return CH1;
 }
 
@@ -721,6 +741,7 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 
 		do{
 			currentTangent = D3DXVECTOR2( (*ch_one)[ ch1Pointer ]->v->x - (*ch_two)[ ch2Pointer ]->v->x, (*ch_one)[ ch1Pointer ]->v->y - (*ch_two)[ ch2Pointer ]->v->y );
+			D3DXVec2Normalize(&currentTangent, &currentTangent);
 
 			prePointPtr = 0, nextPointPtr = 0;
 			prePointPtr = ( ch1Pointer - 1  + ch_one->size() ) % ch_one->size();
@@ -728,12 +749,15 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 
 			tmpLeft = D3DXVECTOR2( (*ch_one)[ prePointPtr ]->v->x - (*ch_one)[ ch1Pointer ]->v->x, (*ch_one)[ prePointPtr ]->v->y - (*ch_one)[ ch1Pointer ]->v->y );
 			tmpRight = D3DXVECTOR2( (*ch_one)[ nextPointPtr ]->v->x - (*ch_one)[ ch1Pointer ]->v->x, (*ch_one)[ nextPointPtr ]->v->y - (*ch_one)[ ch1Pointer ]->v->y );
-			crossProductOne = currentTangent.x * tmpLeft.y - currentTangent.y * tmpLeft.x;
-			crossProductTwo = currentTangent.x * tmpRight.y - currentTangent.y * tmpRight.x;
+			D3DXVec2Normalize(&tmpLeft, &tmpLeft);
+			D3DXVec2Normalize(&tmpRight, &tmpRight);
 
-			if( crossProductOne * crossProductTwo < -eps|| ( crossProductOne < eps && crossProductTwo < eps ) )
+			crossProductOne = sign(currentTangent.x * tmpLeft.y - currentTangent.y * tmpLeft.x); 
+			crossProductTwo = sign(currentTangent.x * tmpRight.y - currentTangent.y * tmpRight.x);
+
+			if( crossProductOne * crossProductTwo < -eps || ( crossProductOne > eps && crossProductTwo > eps ) )
 			{
-				ch1Pointer = ( ch1Pointer - 1 + ch_one->size() ) % ch_one->size();
+				ch1Pointer = ( ch1Pointer + 1 + ch_one->size() ) % ch_one->size();
 				keepDoing = true;
 			}
 			else
@@ -744,6 +768,7 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 
 		do{
 			currentTangent = D3DXVECTOR2( (*ch_one)[ ch1Pointer ]->v->x - (*ch_two)[ ch2Pointer ]->v->x, (*ch_one)[ ch1Pointer ]->v->y - (*ch_two)[ ch2Pointer ]->v->y );
+			D3DXVec2Normalize(&currentTangent, &currentTangent);
 
 			// For convex hull B
 			prePointPtr = ( ch2Pointer - 1  + ch_two->size() ) % ch_two->size();
@@ -751,21 +776,27 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 
 			tmpLeft = D3DXVECTOR2( (*ch_two)[ prePointPtr ]->v->x - (*ch_two)[ ch2Pointer ]->v->x, (*ch_two)[ prePointPtr ]->v->y - (*ch_two)[ ch2Pointer ]->v->y );
 			tmpRight = D3DXVECTOR2( (*ch_two)[ nextPointPtr ]->v->x - (*ch_two)[ ch2Pointer ]->v->x, (*ch_two)[ nextPointPtr ]->v->y - (*ch_two)[ ch2Pointer ]->v->y );
-			crossProductOne = currentTangent.x * tmpLeft.y - currentTangent.y * tmpLeft.x;
-			crossProductTwo = currentTangent.x * tmpRight.y - currentTangent.y * tmpRight.x;
+			D3DXVec2Normalize(&tmpLeft, &tmpLeft);
+			D3DXVec2Normalize(&tmpRight, &tmpRight);
 
-			if( crossProductOne * crossProductTwo < -eps || ( crossProductOne < eps && crossProductTwo < eps ) )
+			crossProductOne = sign(currentTangent.x * tmpLeft.y - currentTangent.y * tmpLeft.x);
+			crossProductTwo = sign(currentTangent.x * tmpRight.y - currentTangent.y * tmpRight.x);
+
+			if( crossProductOne * crossProductTwo < -eps || ( crossProductOne > eps && crossProductTwo > eps ) )
 			{
-				ch2Pointer = ( ch2Pointer + 1 ) % ch_two->size();
+				ch2Pointer = ( ch2Pointer - 1 + ch_two->size() ) % ch_two->size();
 				keepDoing = true;
 			}
 			else
 			{
 				keepDoing = false;
-		}
+			}
 		}while( keepDoing );
 
+
+
 		currentTangent = D3DXVECTOR2( (*ch_one)[ ch1Pointer ]->v->x - (*ch_two)[ ch2Pointer ]->v->x, (*ch_one)[ ch1Pointer ]->v->y - (*ch_two)[ ch2Pointer ]->v->y );
+		D3DXVec2Normalize(&currentTangent, &currentTangent);
 
 		prePointPtr = 0, nextPointPtr = 0;
 		prePointPtr = ( ch1Pointer - 1  + ch_one->size() ) % ch_one->size();
@@ -773,12 +804,15 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 
 		tmpLeft = D3DXVECTOR2( (*ch_one)[ prePointPtr ]->v->x - (*ch_one)[ ch1Pointer ]->v->x, (*ch_one)[ prePointPtr ]->v->y - (*ch_one)[ ch1Pointer ]->v->y );
 		tmpRight = D3DXVECTOR2( (*ch_one)[ nextPointPtr ]->v->x - (*ch_one)[ ch1Pointer ]->v->x, (*ch_one)[ nextPointPtr ]->v->y - (*ch_one)[ ch1Pointer ]->v->y );
-		crossProductOne = currentTangent.x * tmpLeft.y - currentTangent.y * tmpLeft.x;
-		crossProductTwo = currentTangent.x * tmpRight.y - currentTangent.y * tmpRight.x;
+		D3DXVec2Normalize(&tmpLeft, &tmpLeft);
+		D3DXVec2Normalize(&tmpRight, &tmpRight);
 
-		if( crossProductOne * crossProductTwo < -eps || ( crossProductOne < eps && crossProductTwo < eps ) )
+		crossProductOne = sign(currentTangent.x * tmpLeft.y - currentTangent.y * tmpLeft.x);
+		crossProductTwo = sign(currentTangent.x * tmpRight.y - currentTangent.y * tmpRight.x);
+
+		if( crossProductOne * crossProductTwo < -eps || ( crossProductOne > eps && crossProductTwo > eps ) )
 		{
-			ch1Pointer = ( ch1Pointer - 1 + ch_one->size() ) % ch_one->size();
+//			ch1Pointer = ( ch1Pointer + 1 + ch_one->size() ) % ch_one->size();
 			keepDoing = true;
 		}
 		else
@@ -786,7 +820,21 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 			keepDoing = false;
 		}
 
+		/*cout << D3DXVec2Length(&currentTangent) << ' ' << D3DXVec2Length(&tmpLeft) << ' ' << D3DXVec2Length(&tmpRight) << endl;
+		cout << "ÄãÂè±ÆÅ¶" << " " << crossProductOne << ' ' << crossProductTwo << endl;
+		cout << ch1Pointer << ' ' << ch2Pointer << endl;*/
 	} while ( keepDoing );
+
+
+	//for (int i=0; i<ch_one->size(); i++)
+	//	cout << (*ch_one)[i]->v->id << " ";
+	//cout << "\n-----------------------\n";
+	//for (int  i=0; i<ch_two->size(); i++)
+	//	cout << (*ch_two)[i]->v->id << " ";
+	//cout << "\n---------------------------------\n";
+
+	//int rjb; cin >> rjb;
+
 
 	*ch1_cand = (*ch_one)[ ch1Pointer ];
 	*ch2_cand = (*ch_two)[ ch2Pointer ];

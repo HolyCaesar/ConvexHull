@@ -2,6 +2,8 @@
 
 #include "ConvexHullAlgorithm.h"
 
+const float eps = 0.000001;
+
 class DivideAndConquerFor3DCH : public ConvexHullAlgorithm
 {
 public:
@@ -18,4 +20,10 @@ private:
 	bool RayTriangleIntersection( Ray r, TRIANGLE triangle, const vector<VERTEX*>* pVertex );
 	bool isNormal( Ray r, TRIANGLE triangle, const vector<VERTEX*>* pVertex );
 	void recursivelyDeleteFace(FaceObject* face, DCEL *dcel);
+	float sign(float a)
+	{
+		if (a > eps) return 1;
+		else if (a < -eps) return -1;
+		else return 0;
+	}
 };

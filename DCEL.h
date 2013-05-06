@@ -76,6 +76,23 @@ public:
 	DCEL( const DCEL& other );
 	~DCEL();
 
+	void removeUselessVertices(void)
+	{
+		for (list<VertexObject*>::iterator i=m_Vertexs->begin(); i!=m_Vertexs->end(); i++)
+			(*i)->visited = false;
+		for (list<HalfedgeObject*>::iterator i=m_HalfEdges->begin(); i!=m_HalfEdges->end(); i++)
+			(*i)->origin->visited = true;
+
+		list<VertexObject*>::iterator tmp;
+		for (list<VertexObject*>::iterator i=m_Vertexs->begin(); i!=m_Vertexs->end(); )
+			if (!(*i)->visited)
+			{
+				tmp = i++;
+				remove(*tmp);
+			}
+			else 
+				i++;
+	}
 	void fixIterator(void)
 	{
 		for (list<VertexObject*>::iterator i=m_Vertexs->begin(); i!=m_Vertexs->end(); i++)
@@ -149,11 +166,12 @@ public:
 		return find(m_HalfEdges->begin(), m_HalfEdges->end(), e) != m_HalfEdges->end();
 	}
 
+
     friend ostream& operator << (ostream& cout, DCEL dcel)
     {
-   //     cout << "Vertices: ";
-   //     for (list<VertexObject*>::iterator i=dcel.m_Vertexs->begin(); i!=dcel.m_Vertexs->end(); i++)
-   //     cout << (*i)->v->id << ' ';
+        //cout << "Vertices: ";
+        //for (list<VertexObject*>::iterator i=dcel.m_Vertexs->begin(); i!=dcel.m_Vertexs->end(); i++)
+        //cout << (*i)->v->id << ' ';
    //     cout << endl;
    //     
    //     cout << "Edges:\n";
