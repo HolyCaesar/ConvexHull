@@ -244,14 +244,12 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	int midPoint = ( endPoint + startPoint ) * 0.5;
 	DCEL CH1 = DVCalculate3DConvexHull( pVertex, startPoint, midPoint, offset );
 	DCEL CH2 = DVCalculate3DConvexHull( pVertex, midPoint + 1, endPoint, midPoint + 1 );
+	
+	assert(CH1.checkIterators());
+	assert(CH2.checkIterators());
 
 	CH1.unsetVisited();
 	CH2.unsetVisited();
-
-	char jb;
-	cout << CH1 << endl;  cin >> jb;
-	cout << "----------------------------------" << endl;
-	cout << CH2 << endl; cin >> jb;
 
 	/*
 	* Phase 2: Merge two convex hulls
@@ -261,8 +259,6 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	CH_Up = find2DConvexHull( CH1.m_Vertexs );
 	CH_Down = find2DConvexHull( CH2.m_Vertexs );
 	findTangentFor3DCHs( &CH_Up, &CH_Down, &v1AtTanVO, &v2AtTanVO );
-
-	cout << "切线是 " << v1AtTanVO->v->id << " " << v2AtTanVO->v->id << endl;
 
 	// Find a plane that cross this tangent and parallel z axis
 	D3DXVECTOR3 planV1( v1AtTanVO->v->x - v2AtTanVO->v->x, v1AtTanVO->v->y - v2AtTanVO->v->y, v1AtTanVO->v->z - v2AtTanVO->v->z );
@@ -294,26 +290,26 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	}
 	
 	// test
-	for (list<VertexObject*>::iterator it=CH1.m_Vertexs->begin(); it!=CH1.m_Vertexs->end(); it++)
-	{
-		D3DXVECTOR3 v((*it)->v->x - v1AtTanVO->v->x, (*it)->v->y - v1AtTanVO->v->y, (*it)->v->z - v1AtTanVO->v->z);
-		double dot = D3DXVec3Dot(&v, &planeNormal);
-		if (dot > 1E-5) 
-		{
-			cout << "RJB报告： 法线阳萎了" << endl;
-			break;
-		}
-	}
-	for (list<VertexObject*>::iterator it=CH2.m_Vertexs->begin(); it!=CH2.m_Vertexs->end(); it++)
-	{
-		D3DXVECTOR3 v((*it)->v->x - v1AtTanVO->v->x, (*it)->v->y - v1AtTanVO->v->y, (*it)->v->z - v1AtTanVO->v->z);
-		double dot = D3DXVec3Dot(&v, &planeNormal);
-		if (dot > 1E-5) 
-		{
-			cout << "RJB报告： 法线阳萎了" << endl;
-			break;
-		}
-	}
+	//for (list<VertexObject*>::iterator it=CH1.m_Vertexs->begin(); it!=CH1.m_Vertexs->end(); it++)
+	//{
+	//	D3DXVECTOR3 v((*it)->v->x - v1AtTanVO->v->x, (*it)->v->y - v1AtTanVO->v->y, (*it)->v->z - v1AtTanVO->v->z);
+	//	double dot = D3DXVec3Dot(&v, &planeNormal);
+	//	if (dot > 1E-5) 
+	//	{
+	//		cout << "RJB报告： 法线阳萎了" << endl;
+	//		break;
+	//	}
+	//}
+	//for (list<VertexObject*>::iterator it=CH2.m_Vertexs->begin(); it!=CH2.m_Vertexs->end(); it++)
+	//{
+	//	D3DXVECTOR3 v((*it)->v->x - v1AtTanVO->v->x, (*it)->v->y - v1AtTanVO->v->y, (*it)->v->z - v1AtTanVO->v->z);
+	//	double dot = D3DXVec3Dot(&v, &planeNormal);
+	//	if (dot > 1E-5) 
+	//	{
+	//		cout << "RJB报告： 法线阳萎了" << endl;
+	//		break;
+	//	}
+	//}
 	
 	
 	// These two points are two ends of the tangent
@@ -363,7 +359,6 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 		VertexObject* resultVertex1 = NULL, * resultVertex2 = NULL;
 		HalfedgeObject* resultEdge1 = NULL, * resultEdge2 = NULL;
 
-		cout << "V1 = " << v1AtTanVO->v->id << endl;
 		do
 		{
 			// Find the angle between two plane
@@ -373,14 +368,6 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 			D3DXVec3Normalize( &tmpPlaneNormal1, &tmpPlaneNormal1 );
 
 			double tmpMaxPlaneAngle = D3DXVec3Dot( &planeNormal, &tmpPlaneNormal1 );
-			/*if( fabs( tmpMaxPlaneAngle - 1.0f ) < 0.00001f )
-			{
-				currentHalfEdge = currentHalfEdge->twins->nextEdge;
-				testVertex = currentHalfEdge->twins->origin;
-				continue;
-			}*/
-
-			cout << tmpMaxPlaneAngle << " " << testVertex->v->id <<  endl;
 			if( tmpMaxPlaneAngle > maxPlaneAngleE1 )
 			{
 				maxPlaneAngleE1 = tmpMaxPlaneAngle;
@@ -395,8 +382,6 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 
 		currentHalfEdge = v2AtTanVO->leaving;
 		testVertex = currentHalfEdge->twins->origin;
-		cout << "V2 = " << v2AtTanVO->v->id << endl;
-
 		do
 		{
 			// Find the angle between two plane
@@ -406,14 +391,6 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 			D3DXVec3Normalize( &tmpPlaneNormal2, &tmpPlaneNormal2 );
 
 			double tmpMaxPlaneAngle = D3DXVec3Dot( &planeNormal, &tmpPlaneNormal2 );
-			/*if( fabs( tmpMaxPlaneAngle - 1.0f ) < 0.00001f )
-			{
-				currentHalfEdge = currentHalfEdge->twins->nextEdge;
-				testVertex = currentHalfEdge->twins->origin;
-				continue;
-			}*/
-			cout << tmpMaxPlaneAngle << " " << testVertex->v->id <<  endl;
-
 			if( tmpMaxPlaneAngle > maxPlaneAngleE2 )
 			{
 				maxPlaneAngleE2 = tmpMaxPlaneAngle;
@@ -443,32 +420,51 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 		}
 	}while( vE1Start != v1AtTanVO || vE2Start != v2AtTanVO );
 
-
-	//////////////////////////////////////////////////////////////
-	/////
-	for( int i = 0; i < CHCandidates.size(); i++ )
+	/*
+	* Change DCEL structure, delete the face, halfedges and vertices inside the new convex hull
+	*/
+	for (int i=2; i<(int)CHCandidates.size(); i++)
 	{
-		cout << CHCandidates[ i ].belonging << " id is " << CHCandidates[ i ].candidatePoint->v->id << endl;
+		CHCandidates[ i ].candidateEdge->visited = true;
 	}
-	////////////////////////////////////////////////////////////////
 
+	for (int i=2; i<(int)CHCandidates.size(); i++)
+	{
+		if ( CHCandidates[ i ].belonging == 0)
+			recursivelyDeleteFace( CHCandidates[ i ].candidateEdge->attachedFace, &CH1);
+		else 
+		{
+			recursivelyDeleteFace( CHCandidates[ i ].candidateEdge->twins->attachedFace, &CH2);
+		}
+	}
 
 	/*
 	* Construct DCEL based on the CHCandidates
 	*/
+	
+	list<FaceObject*>::iterator faceIter, tmpFaceIter;
 	candidateList a = CHCandidates[ 0 ]; // tangent point at CH1
 	candidateList b = CHCandidates[ 1 ]; // tangent point at CH2
 
-	int latestPos = 1;
+	//int latestPos = 1;
 	vector<FaceObject*> tmpFaces;
 	for( int i = 2; i < CHCandidates.size(); i++ )
 	{
-		CHCandidates[ i ].candidateEdge->visited = true;
-
 		VertexObject* curPoint = CHCandidates[ i ].candidatePoint;
 		HalfedgeObject *HEdge1 = new HalfedgeObject;
 		HalfedgeObject *HEdge2 = new HalfedgeObject;
 		HalfedgeObject *HEdge3 = new HalfedgeObject;
+
+		if (CHCandidates[ i ].belonging == 0)
+		{
+			delete HEdge2;
+			HEdge2 = CHCandidates[ i ].candidateEdge;
+		}
+		else
+		{
+			delete HEdge3;
+			HEdge3 = CHCandidates[ i ].candidateEdge->twins;
+		}
 
 		FaceObject* face = new FaceObject;
 		face->attachedEdge = HEdge1;
@@ -491,16 +487,14 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 		curPoint->leaving = HEdge3;
 		HEdge3->nextEdge = HEdge1;
 		HEdge3->preEdge  = HEdge2;
-		
+
 		if( CHCandidates[ i ].belonging == a.belonging )
 		{
-			HEdge2->twins = CHCandidates[ i ].candidateEdge;
-			CHCandidates[ i ].candidateEdge->twins = HEdge2;
+			HEdge2->twins = CHCandidates[ i ].candidateEdge->twins;
+			CHCandidates[ i ].candidateEdge->twins->twins = HEdge2;
 		}
 		else
 		{
-			CHCandidates[ i ].candidateEdgeTwin = CHCandidates[ i ].candidateEdge->twins;
-
 			HEdge3->twins = CHCandidates[ i ].candidateEdge;
 			CHCandidates[ i ].candidateEdge->twins = HEdge3;
 		}
@@ -545,79 +539,10 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	}
 
 	/*
-	* Change DCEL structure, delete the face, halfedges and vertices inside the new convex hull
-	*/
-	list<FaceObject*>::iterator faceIter, tmpFaceIter;
+	* Change DCEL structure, delete the vertices
+	* Delete points with status delete
+	*/ 
 
-	cout << "开始删除三角形" << endl;
-	for ( int i = 2; i < (int)CHCandidates.size(); i++ )
-	{
-		if ( CHCandidates[ i ].belonging == 0)
-			recursivelyDeleteFace( CHCandidates[ i ].candidateEdge->attachedFace, &CH1 );
-		else 
-			recursivelyDeleteFace( CHCandidates[ i ].candidateEdgeTwin->attachedFace, &CH2 );
-	}
-	
-	//D3DXVECTOR3 posYVec( 0.0f, 1.0f, 0.0f );
-	//
-	//for( faceIter = CH1.m_Faces->begin(); faceIter != CH1.m_Faces->end(); )
-	//{
-	//	VertexObject* v1, * v2, * v3;
-	//	v1 = (*faceIter)->attachedEdge->origin;
-	//	v2 = (*faceIter)->attachedEdge->nextEdge->origin;
-	//	v3 = (*faceIter)->attachedEdge->nextEdge->nextEdge->origin;
-
-	//	D3DXVECTOR3 curFaceNormal;
-	//	D3DXVec3Cross( &curFaceNormal, &D3DXVECTOR3( v2->v->x - v1->v->x, v2->v->y - v1->v->y, v2->v->z - v1->v->z ), &D3DXVECTOR3( v3->v->x - v2->v->x, v3->v->y - v2->v->y, v3->v->z - v2->v->z ) );
-	//	D3DXVec3Normalize( &curFaceNormal, &curFaceNormal );
-
-	//	// Face that inside that cylinder
-	//	if( D3DXVec3Dot( &posYVec, &curFaceNormal ) < 0 )
-	//	{
-	//		if( v1->status != 1 ) v1->status = 2;
-	//		if( v2->status != 1 ) v2->status = 2;
-	//		if( v3->status != 1 ) v3->status = 2;
-
-	//		tmpFaceIter = faceIter++;
-	//		CH1.deleteFace( (*tmpFaceIter) );
-	//		//CH1.remove( (*faceIter) );
-	//	}
-	//	else
-	//	{
-	//		faceIter++;
-	//	}
-	//}
-
-	//for( faceIter = CH2.m_Faces->begin(); faceIter != CH2.m_Faces->end();  )
-	//{
-	//	VertexObject* v1, * v2, * v3;
-	//	v1 = (*faceIter)->attachedEdge->origin;
-	//	v2 = (*faceIter)->attachedEdge->nextEdge->origin;
-	//	v3 = (*faceIter)->attachedEdge->nextEdge->nextEdge->origin;
-
-	//	D3DXVECTOR3 curFaceNormal;
-	//	D3DXVec3Cross( &curFaceNormal, &D3DXVECTOR3( v2->v->x - v1->v->x, v2->v->y - v1->v->y, v2->v->z - v1->v->z ), &D3DXVECTOR3( v3->v->x - v2->v->x, v3->v->y - v2->v->y, v3->v->z - v2->v->z ) );
-	//	D3DXVec3Normalize( &curFaceNormal, &curFaceNormal );
-
-	//	// Face that inside that cylinder
-	//	if( D3DXVec3Dot( &posYVec, &curFaceNormal ) > 0 )
-	//	{
-	//		if( v1->status != 1 ) v1->status = 2;
-	//		if( v2->status != 1 ) v2->status = 2;
-	//		if( v3->status != 1 ) v3->status = 2;
-
-	//		tmpFaceIter = faceIter++;
-	//		CH2.deleteFace( (*tmpFaceIter) );
-	//		//CH2.remove( (*faceIter ) );
-	//	} 
-	//	else
-	//	{
-	//		faceIter++;
-	//	}
-	//}
-	//
-
-	// Delete points with status delete
 	list<VertexObject*>::iterator vexIter, tmpVexIter;
 	for( vexIter = CH1.m_Vertexs->begin(); vexIter != CH1.m_Vertexs->end();  )
 	{
@@ -636,7 +561,6 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 			vexIter++;
 		}
 	}
-
 	for( vexIter = CH2.m_Vertexs->begin(); vexIter != CH2.m_Vertexs->end();  )
 	{
 		if( (*vexIter)->status == 2 )
@@ -656,17 +580,6 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 
 	}
 
-	cout << "软jb哇哇大叫！" << endl;
-
-	// Merge CH1 and CH2
-	list<HalfedgeObject*>::iterator heIter = CH2.m_HalfEdges->begin();
-	faceIter = CH2.m_Faces->begin();
-	vexIter = CH2.m_Vertexs->begin();
-
-	CH1.m_HalfEdges->splice( CH1.m_HalfEdges->end(), *CH2.m_HalfEdges );
-	CH1.m_Faces->splice( CH1.m_Faces->end(), *CH2.m_Faces );
-	CH1.m_Vertexs->splice( CH1.m_Vertexs->end(), *CH2.m_Vertexs );
-
 	for( int i = 0; i < tmpFaces.size(); i++ )
 	{
 		CH1.add( tmpFaces[ i ] );
@@ -674,7 +587,11 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 		CH1.add( tmpFaces[ i ]->attachedEdge->nextEdge );
 		CH1.add( tmpFaces[ i ]->attachedEdge->nextEdge->nextEdge );
 	}
+	CH1.m_HalfEdges->splice( CH1.m_HalfEdges->end(), *CH2.m_HalfEdges );
+	CH1.m_Faces->splice( CH1.m_Faces->end(), *CH2.m_Faces );
+	CH1.m_Vertexs->splice( CH1.m_Vertexs->end(), *CH2.m_Vertexs );
 
+	CH1.fixIterator();
 	return CH1;
 }
 
@@ -814,9 +731,9 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 			crossProductOne = currentTangent.x * tmpLeft.y - currentTangent.y * tmpLeft.x;
 			crossProductTwo = currentTangent.x * tmpRight.y - currentTangent.y * tmpRight.x;
 
-			if( crossProductOne * crossProductTwo < -eps|| ( crossProductOne > eps && crossProductTwo > eps ) )
+			if( crossProductOne * crossProductTwo < -eps|| ( crossProductOne < eps && crossProductTwo < eps ) )
 			{
-				ch1Pointer = ( ch1Pointer + 1 ) % ch_one->size();
+				ch1Pointer = ( ch1Pointer - 1 + ch_one->size() ) % ch_one->size();
 				keepDoing = true;
 			}
 			else
@@ -837,9 +754,9 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 			crossProductOne = currentTangent.x * tmpLeft.y - currentTangent.y * tmpLeft.x;
 			crossProductTwo = currentTangent.x * tmpRight.y - currentTangent.y * tmpRight.x;
 
-			if( crossProductOne * crossProductTwo < -eps || ( crossProductOne > eps && crossProductTwo > eps ) )
+			if( crossProductOne * crossProductTwo < -eps || ( crossProductOne < eps && crossProductTwo < eps ) )
 			{
-				ch2Pointer = ( ch2Pointer - 1 + ch_two->size() ) % ch_two->size();
+				ch2Pointer = ( ch2Pointer + 1 ) % ch_two->size();
 				keepDoing = true;
 			}
 			else
@@ -859,9 +776,9 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 		crossProductOne = currentTangent.x * tmpLeft.y - currentTangent.y * tmpLeft.x;
 		crossProductTwo = currentTangent.x * tmpRight.y - currentTangent.y * tmpRight.x;
 
-		if( crossProductOne * crossProductTwo < -eps || ( crossProductOne > eps && crossProductTwo > eps ) )
+		if( crossProductOne * crossProductTwo < -eps || ( crossProductOne < eps && crossProductTwo < eps ) )
 		{
-			ch1Pointer = ( ch1Pointer + 1 ) % ch_one->size();
+			ch1Pointer = ( ch1Pointer - 1 + ch_one->size() ) % ch_one->size();
 			keepDoing = true;
 		}
 		else
@@ -887,28 +804,17 @@ void DivideAndConquerFor3DCH::recursivelyDeleteFace(FaceObject* face, DCEL *dcel
 	VertexObject *v2 = e2->origin;
 	VertexObject *v3 = e3->origin;
 
-	//cout << "v1 = " << v1->v->id <<  ' ' << ", v2 = " << v2->v->id << ", v3 = " << v3->v->id << endl;
-	//cout << v1->status << ' ' << v2->status << ' ' << v3->status << endl;
-
-	
 	for ( int i = 0; i < 3; i++, e1 = e1->nextEdge )
 	{
-		//cout << "Edge = " << e1->origin->v->id << ' ' << e1->twins->origin->v->id << endl;
-
-		if (e1->origin == e1->twins->origin)
-		{
-			cout << e1->origin->v->id << "  阳萎了" << endl;
-			int jb; cin >> jb;
-		}
-		if (e1->origin->status != 1 && e1->twins->origin->status != 1)
-		//if (!e1->visited && !e1->twins->visited)
+		//if (e1->origin->status != 1 || e1->twins->origin->status != 1)
+		if (!e1->visited && !e1->twins->visited)
 			recursivelyDeleteFace(e1->twins->attachedFace, dcel);
 	}
 
 	if( v1->status != 1 ) v1->status = 2;
 	if( v2->status != 1 ) v2->status = 2;
 	if( v3->status != 1 ) v3->status = 2;
-
+			
 	dcel->remove( e1 );
 	dcel->remove( e2 );
 	dcel->remove( e3 );

@@ -20,8 +20,6 @@ DCEL::~DCEL()
 template<class T>
 void DCEL::cleanList( list<T>* target )
 {
-	cout << target->size() << endl;
-
 	list<T>::iterator iter;
 	for( iter = target->begin(); iter != target->end(); iter++ )
 	{

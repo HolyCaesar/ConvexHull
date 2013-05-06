@@ -68,32 +68,13 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	//delete System;
 	//System = 0;
 
-	vector<VERTEX> pointSet = PointGenerator::pointsOnSphere( 25 );
+	vector<VERTEX> pointSet = PointGenerator::pointsOnSphere( 100 );
 	sort( pointSet.begin(), pointSet.end(), cmp );
 
-	//list<VertexObject*> p;
-	//for( int i = 0; i < pointSet.size(); i++ )
-	//{
-	//	VertexObject* tmp = new VertexObject;
-	//	tmp->v = &pointSet[ i ];
-	//	tmp->v->id = i;
-
-	//	p.push_back( tmp );
-	//}
-
-	for( int i = 0; i < pointSet.size(); i++ )
-	{
-		cout << pointSet[ i ] << endl;
-	}
 
 	DivideAndConquerFor3DCH dc;
 	DCEL dcel = dc.DVCalculate3DConvexHull( &pointSet, 0, pointSet.size() - 1, 0 );
-	//vector<VertexObject*> test = dc.find2DConvexHull( &p );
 
-	//for( int i = 0; i < test.size(); i++ )
-	//{
-	//	cout << test[ i ]->v->id << endl;
-	//}
 	cout << dcel << endl;
 	int a;
 	cin >> a;
