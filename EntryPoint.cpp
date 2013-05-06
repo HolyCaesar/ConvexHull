@@ -73,8 +73,6 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	IncrementalHull3DFast rjb(pointSet);
 	cout << rjb.dcel << endl;
 
-
-
 	sort( pointSet.begin(), pointSet.end(), cmp );
 	//for (int i=0; i<pointSet.size(); i++)
 	//	cout << pointSet[i] << endl;
