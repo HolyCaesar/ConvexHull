@@ -26,7 +26,7 @@ float4 main( PixelInputType input ) : SV_TARGET
 
     // Determine the final amount of diffuse color based on the diffuse color combined with the light intensity.
     color = saturate( diffuseColor * lightIntensity );
-
+	color = color * input.color;
 	//return color;
 	return color;
 }
