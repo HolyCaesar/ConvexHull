@@ -46,8 +46,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Daniel\Desktop\AntTweakBar_116\AntTweakBar\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Daniel\Desktop\AntTweakBar_116\AntTweakBar\lib;$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -81,6 +81,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>AntTweakBar.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -92,8 +93,10 @@
     <ClInclude Include="DivideAndConquerFor3DCH.h" />
     <ClInclude Include="GeoDefinition.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="GUI.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="3DModel.h" />
+    <ClInclude Include="Quaternion.h" />
     <ClInclude Include="IncrementalHull3D.h" />
     <ClInclude Include="IncrementalHull3DFast.h" />
     <ClInclude Include="Input.h" />
@@ -110,7 +113,9 @@
     <ClCompile Include="DivideAndConquerFor3DCH.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SystemClass.cpp" />
   </ItemGroup>

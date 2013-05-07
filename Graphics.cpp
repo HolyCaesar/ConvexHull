@@ -1,4 +1,5 @@
 #include "Graphics.h"
+#include "Quaternion.h"
 
 using namespace std;
 
@@ -131,13 +132,18 @@ bool Graphics::D3DRender()
 	D3DXMATRIX rotationMatrix, scaleMatrix;
 	D3DXMatrixRotationYawPitchRoll( &rotationMatrix, m_xRotation, m_yRotation, m_zRotation );
 	D3DXMatrixScaling( &scaleMatrix, m_scale, m_scale, m_scale );
-	worldMatrix *= scaleMatrix * rotationMatrix;
+	D3DXMATRIX rotationTest = Quaternion::QuaternionToMatrix( Quaternion::g_SpongeRotation );
+	//worldMatrix *= scaleMatrix * rotationMatrix;
+	worldMatrix *= scaleMatrix * rotationTest;
 
 	/*Put the model vertex and index buffers on the graphics pipeline to prepare for rendering*/
 	m_pModel->RenderModel( m_pD3D->GetDeviceContext() );
 
 	/*Render model using the color shader*/
 	m_pShader->Render( m_pD3D->GetDeviceContext(), m_pModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix );
+
+	/*Render GUI*/
+	TwDraw();
 
 	/*Present the rendered scene to the screen.*/
 	m_pD3D->EndScene();
@@ -151,5 +157,10 @@ void Graphics::SetModelData( DCEL* CHModel )
 
 void Graphics::Scale( float factor )
 {
-	m_scale += factor;
+	m_scale = factor;
 }
+
+ID3D11Device* Graphics::GetD3DDevice()
+{
+	return m_pD3D->GetDevice();
+};

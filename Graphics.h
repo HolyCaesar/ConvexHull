@@ -27,6 +27,7 @@ public:
 	void SetYawPitchRoll( float rx, float ry, float rz );
 	void Scale( float factor );
 	void SetModelData( DCEL* CHModel );
+	ID3D11Device* GetD3DDevice();
 
 private:
 	bool D3DRender();

@@ -22,6 +22,9 @@
 #include <tchar.h>
 #include <time.h>
 
+//
+#include "AntTweakBar.h"
+
 using namespace std;
 
 #endif // HEADERS_H

@@ -825,17 +825,6 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 		cout << ch1Pointer << ' ' << ch2Pointer << endl;*/
 	} while ( keepDoing );
 
-
-	//for (int i=0; i<ch_one->size(); i++)
-	//	cout << (*ch_one)[i]->v->id << " ";
-	//cout << "\n-----------------------\n";
-	//for (int  i=0; i<ch_two->size(); i++)
-	//	cout << (*ch_two)[i]->v->id << " ";
-	//cout << "\n---------------------------------\n";
-
-	//int rjb; cin >> rjb;
-
-
 	*ch1_cand = (*ch_one)[ ch1Pointer ];
 	*ch2_cand = (*ch_two)[ ch2Pointer ];
 }

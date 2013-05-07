@@ -2,19 +2,30 @@
 #include "DCEL.h"
 using namespace std;
 
+#include <algorithm>
+
+bool cmp(const VERTEX &a, const VERTEX &b)
+{
+	return a.y > b.y;
+}
+
 SystemClass::SystemClass()
 {
 	m_input = 0;
+	m_gui   = 0;
 	m_graphicsEngine = 0;
 	m_screenWidth = 0;
 	m_screenHeight = 0;
 	m_fullScreen = false;
+	m_chAlgorithm = 0;
+	m_updateModelFlag = false;
 
 	pointGeneratorMode = 1;
 	pointNumber = 100;
 	PointGenerator::seed();
-	m_testPointSet = PointGenerator::unitCube();
+	m_testPointSet = PointGenerator::pointsOnSphere( 10 );
 	m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
+	m_divideandconquerMethod = new DivideAndConquerFor3DCH;
 }
 
 SystemClass::SystemClass( const SystemClass& other )
@@ -25,6 +36,29 @@ SystemClass::SystemClass( const SystemClass& other )
 SystemClass::~SystemClass()
 {
 	delete m_incrementalMethod;
+}
+
+void SystemClass::Set3DCHAlgorithm( int algorithm )
+{
+	m_chAlgorithm = algorithm;
+	m_updateModelFlag = true;
+}
+
+void SystemClass::SetPointNum( unsigned int num )
+{
+	pointNumber = num;
+	m_updateModelFlag = true;
+}
+
+void SystemClass::SetRNGModel( unsigned int model )
+{
+	pointGeneratorMode = model;
+	m_updateModelFlag = true;
+}
+
+void SystemClass::SetScale( float factor )
+{
+	m_graphicsEngine->Scale( factor );
 }
 
 bool SystemClass::Initialize()
@@ -59,6 +93,14 @@ bool SystemClass::Initialize()
 	}
 
 	m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+
+	/*Initialize the GUI*/
+	m_gui = new GUI( this );
+	if( !m_gui )
+	{
+		return false;
+	}
+	m_gui->InitializeGUI( 800, 600, m_graphicsEngine->GetD3DDevice() );
 
 	return true;
 }
@@ -99,19 +141,29 @@ void SystemClass::Run()
 		/*Handle the windows messages.*/
 		if( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )
 		{
-			TranslateMessage( &msg );
-			DispatchMessage( &msg );
+			if( TwEventWin( m_hwnd, msg.message, msg.wParam, msg.lParam ) ) {
+				//_dirty = true;
+				continue;
+			}
+			if(msg.message == WM_QUIT) { done = true; }
+			else
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			//TranslateMessage(&msg);
+			//DispatchMessage(&msg);
 		}
-
 		/*If windows signals to end the application then exit out.*/
-		if( msg.message == WM_QUIT )
-		{
-			done = true;
-		}
+		//if( msg.message == WM_QUIT )
+		//{
+		//	done = true;
+		//}
 		else
 		{
 			/*Otherwise do the frame processing.*/
 			result = Frame();
+			
 			if( !result )
 			{
 				done = true;
@@ -165,158 +217,55 @@ bool SystemClass::Frame()
 		m_graphicsEngine->SetYawPitchRoll( 0.0, 0.0, -0.1 );
 	}
 
-	if( m_input->IsKeyDown( 'Z' ) )
+	if( m_updateModelFlag )
 	{
-		m_graphicsEngine->Scale( 0.1f );
-	}
-
-	if( m_input->IsKeyDown( 'X' ) )
-	{
-		m_graphicsEngine->Scale( -0.1f );
-	}
-
-	if( m_input->IsKeyDown( '1' ) )
-	{
-		PointGenerator::seed();
-		if( m_testPointSet.empty() == false )
-		{
-			m_testPointSet = PointGenerator::pointsInSphere( 100 );
-		}
-
-		if( m_incrementalMethod )
-		{
-			delete m_incrementalMethod;
-		}
-
-		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
-		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
-		pointGeneratorMode = 1;
-	}
-
-	if( m_input->IsKeyDown( '2' ) )
-	{
-		PointGenerator::seed();
-		if( m_testPointSet.empty() == false )
-		{
-			m_testPointSet = PointGenerator::pointsOnSphere( 100 );
-		}
-
-		if( m_incrementalMethod )
-		{
-			delete m_incrementalMethod;
-		}
-
-		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
-		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
-		pointGeneratorMode = 2;
-	}
-
-	if( m_input->IsKeyDown( '3' ) )
-	{
-		PointGenerator::seed();
-		if( m_testPointSet.empty() == false )
-		{
-			m_testPointSet = PointGenerator::pointsInCube( 100 );
-		}
-
-		if( m_incrementalMethod )
-		{
-			delete m_incrementalMethod;
-		}
-
-		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
-		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
-		pointGeneratorMode = 3;
-	}
-
-	if( m_input->IsKeyDown( '4' ) )
-	{
-		PointGenerator::seed();
-		if( m_testPointSet.empty() == false )
-		{
-			m_testPointSet = PointGenerator::unitCube();
-		}
-
-		if( m_incrementalMethod )
-		{
-			delete m_incrementalMethod;
-		}
-
-		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
-		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
-		pointGeneratorMode = 4;
-	}
-
-	if( m_input->IsKeyDown( 'N' ) )
-	{
-		pointNumber += 10;
-		PointGenerator::seed();
-		if( m_testPointSet.empty() == false )
-		{
-			m_testPointSet.clear();
-		}
+		// Generate the point set
+		//cout << "RNG model " << pointGeneratorMode << endl;
+		//cout << "point NUum " << pointNumber << endl;
 
 		switch( pointGeneratorMode )
 		{
-		case 1:
+		case 0:
 			m_testPointSet = PointGenerator::pointsInSphere( pointNumber );
 			break;
-		case 2:
-			m_testPointSet = PointGenerator::pointsOnSphere( pointNumber );
-			break;
-		case 3:
-			m_testPointSet = PointGenerator::pointsInCube( pointNumber );
-			break;
-		default:
-			break;
-		}
-
-		if( m_incrementalMethod )
-		{
-			delete m_incrementalMethod;
-		}
-
-		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
-		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
-	}
-
-	if( m_input->IsKeyDown( 'M' ) )
-	{
-		pointNumber -= 10;
-		if( pointNumber < 5 )
-		{
-			pointNumber = 5;
-		}
-
-		PointGenerator::seed();
-		if( m_testPointSet.empty() == false )
-		{
-			m_testPointSet.clear();
-		}
-
-		switch( pointGeneratorMode )
-		{
 		case 1:
-			m_testPointSet = PointGenerator::pointsInSphere( pointNumber );
-			break;
-		case 2:
 			cout << pointNumber << endl;
 			m_testPointSet = PointGenerator::pointsOnSphere( pointNumber );
 			break;
-		case 3:
+		case 2:
 			m_testPointSet = PointGenerator::pointsInCube( pointNumber );
+			break;
+		case 3:
+			m_testPointSet = PointGenerator::unitCube();
+		default:
+			break;
+		}
+
+		// Chose different algorithm
+		switch ( m_chAlgorithm )
+		{
+		case 0:
+			{
+				if( m_incrementalMethod )
+				{
+					delete m_incrementalMethod;
+				}
+
+				m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
+				m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+				break;
+			}
+		case 1:
+			{
+				sort( m_testPointSet.begin(), m_testPointSet.end(), cmp );
+				m_graphicsEngine->SetModelData( &( m_divideandconquerMethod->DVCalculate3DConvexHull( &m_testPointSet, 0, m_testPointSet.size() - 1, 0 ) ) );
+			}
 			break;
 		default:
 			break;
 		}
 
-		if( m_incrementalMethod )
-		{
-			delete m_incrementalMethod;
-		}
-
-		m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
-		m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+		m_updateModelFlag = false;
 	}
 
 	/*Do the frame processing for the graphics object.*/

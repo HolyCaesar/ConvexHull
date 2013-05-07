@@ -5,9 +5,6 @@
 #include "PointGenerator.h"
 
 // test code
-#include <vector>
-#include <list>
-#include <algorithm>
 #include "GeoDefinition.h"
 
 using namespace std;
@@ -37,11 +34,6 @@ void UseConsole()
 	cout << "12. press ESC to exit" << endl;
 }
 
-bool cmp(const VERTEX &a, const VERTEX &b)
-{
-	return a.y > b.y;
-}
-
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
 	SystemClass* System;
@@ -50,40 +42,40 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline
 	UseConsole();
 
 	// Create the system object.
-	//System = new SystemClass;
-	//if(!System)
-	//{
-	//	return 0;
-	//}
+	System = new SystemClass;
+	if(!System)
+	{
+		return 0;
+	}
 
-	//// Initialize and run the system object.
-	//result = System->Initialize();
-	//if( result )
-	//{
-	//	System->Run();
-	//}
+	// Initialize and run the system object.
+	result = System->Initialize();
+	if( result )
+	{
+		System->Run();
+	}
 
-	//// Shutdown and release the system object.
-	//System->Shutdown();
-	//delete System;
-	//System = 0;
+	// Shutdown and release the system object.
+	System->Shutdown();
+	delete System;
+	System = 0;
 
-	vector<VERTEX> pointSet = PointGenerator::pointsOnSphere( 100 );
+	//vector<VERTEX> pointSet = PointGenerator::pointsOnSphere( 100 );
 
-	IncrementalHull3DFast rjb(pointSet);
-	cout << rjb.dcel << endl;
+	//IncrementalHull3DFast rjb(pointSet);
+	//cout << rjb.dcel << endl;
 
-	sort( pointSet.begin(), pointSet.end(), cmp );
-	//for (int i=0; i<pointSet.size(); i++)
-	//	cout << pointSet[i] << endl;
-	//char jb; cin >> jb;
+	//sort( pointSet.begin(), pointSet.end(), cmp );
+	////for (int i=0; i<pointSet.size(); i++)
+	////	cout << pointSet[i] << endl;
+	////char jb; cin >> jb;
 
-	DivideAndConquerFor3DCH dc;
-	DCEL dcel = dc.DVCalculate3DConvexHull( &pointSet, 0, pointSet.size() - 1, 0 );
-	cout << dcel << endl;
+	//DivideAndConquerFor3DCH dc;
+	//DCEL dcel = dc.DVCalculate3DConvexHull( &pointSet, 0, pointSet.size() - 1, 0 );
+	//cout << dcel << endl;
 
-	int a;
-	cin >> a;
+	//int a;
+	//cin >> a;
 
 	return 0;
 }
