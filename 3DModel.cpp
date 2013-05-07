@@ -155,7 +155,8 @@ void Model3D::RenderBuffers( ID3D11DeviceContext* deviceContext )
 
 
 	/*Set vertex buffer stride and offset*/
-	stride = sizeof( VertexType );
+	//stride = sizeof( VertexType );
+	stride = sizeof( VertexTypeShaded );
 	offset = 0;
 
 	/*Set the vertex buffer to active in the input assembler so it can be rendered.*/
@@ -343,6 +344,7 @@ void Model3D::LoadModelData( VertexTypeShaded **verticesVec, unsigned long **ind
 	}
 	else
 	{
+		unsigned int counter = 0;
 		for( int i = 0; i < m_vertexCount; i++ )
 		{
 			float x = animationSeq->back()[ i ].x;
@@ -353,6 +355,8 @@ void Model3D::LoadModelData( VertexTypeShaded **verticesVec, unsigned long **ind
 			(*verticesVec)[ i ].normal = D3DXVECTOR3( 1.0f, 1.0f, 1.0f );
 
 			(*indicesVec)[ i ] = i;
+
+			counter += 3;
 		}
 	}
 }

@@ -90,6 +90,7 @@
     <ClInclude Include="ConvexHullAlgorithm.h" />
     <ClInclude Include="D3D.h" />
     <ClInclude Include="DCEL.h" />
+    <ClInclude Include="DebugWindows.h" />
     <ClInclude Include="DivideAndConquerFor3DCH.h" />
     <ClInclude Include="GeoDefinition.h" />
     <ClInclude Include="Graphics.h" />
@@ -103,6 +104,7 @@
     <ClInclude Include="IncrementalHull3DFast.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="PointGenerator.h" />
+    <ClInclude Include="RenderTexture.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SystemClass.h" />
   </ItemGroup>
@@ -112,6 +114,7 @@
     <ClCompile Include="ConvexHullAlgorithm.cpp" />
     <ClCompile Include="D3D.cpp" />
     <ClCompile Include="DCEL.cpp" />
+    <ClCompile Include="DebugWindows.cpp" />
     <ClCompile Include="DivideAndConquerFor3DCH.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
     <ClCompile Include="Graphics.cpp" />
@@ -120,6 +123,7 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightShader.cpp" />
     <ClCompile Include="Quaternion.cpp" />
+    <ClCompile Include="RenderTexture.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SystemClass.cpp" />
   </ItemGroup>
