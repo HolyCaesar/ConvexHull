@@ -9,6 +9,8 @@
 #include "3DModel.h"
 #include "Camera.h"
 #include "Shader.h"
+#include "LightShader.h"
+#include "Light.h"
 #include "DCEL.h"
 
 #pragma warning( once : 4005 )
@@ -26,7 +28,7 @@ public:
 
 	void SetYawPitchRoll( float rx, float ry, float rz );
 	void Scale( float factor );
-	void SetModelData( DCEL* CHModel );
+	void SetModelData( DCEL* CHModel, vector<vector<VERTEX>>* animationSeq );
 	ID3D11Device* GetD3DDevice();
 
 private:
@@ -37,6 +39,8 @@ private:
 	Model3D *m_pModel;
 	Shader  *m_pShader;
 	Camera  *m_pCamera;
+	LightShaderClass *m_pLightShader;
+	LightClass       *m_pLight;
 
 private:
 	float   m_xRotation;

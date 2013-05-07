@@ -9,6 +9,8 @@ Graphics::Graphics()
 	m_pModel = NULL;
 	m_pShader = NULL;
 	m_pCamera = NULL;
+	m_pLightShader = NULL;
+	m_pLight = NULL;
 
 	m_xRotation = 0.0f;
 	m_yRotation = 0.0f;
@@ -67,6 +69,32 @@ bool Graphics::Initialize( int screenWidth, int screenHeight, HWND hwnd )
 		return false;
 	}
 
+	// Create the light shader object.
+	m_pLightShader = new LightShaderClass;
+	if( !m_pLightShader )
+	{
+		return false;
+	}
+
+	// Initialize the light shader object.
+	result = m_pLightShader->Initialize( m_pD3D->GetDevice(), hwnd );
+	if( !result )
+	{
+		MessageBox(hwnd, L"Could not initialize the light shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the light object.
+	m_pLight = new LightClass;
+	if( !m_pLight )
+	{
+		return false;
+	}
+
+	// Initialize the light object.
+	m_pLight->SetDiffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+	m_pLight->SetDirection( 0.0f, 0.0f, 1.0f );
+
 	return true;
 }
 
@@ -105,6 +133,18 @@ void Graphics::Shutdown()
 		delete m_pCamera;
 		m_pCamera = NULL;
 	}
+
+	if( m_pLightShader )
+	{
+		delete m_pLightShader;
+		m_pLightShader = NULL;
+	}
+
+	if( m_pLight )
+	{
+		delete m_pLight;
+		m_pLight = NULL;
+	}
 }
 
 bool Graphics::Frame()
@@ -139,8 +179,29 @@ bool Graphics::D3DRender()
 	/*Put the model vertex and index buffers on the graphics pipeline to prepare for rendering*/
 	m_pModel->RenderModel( m_pD3D->GetDeviceContext() );
 
+
+
+	// TODO will be deleted. Tmp usage
+	if( m_pModel->m_isAnimated )
+	{
+		m_pShader->m_animated = m_pModel->m_isAnimated;
+		m_pModel->m_isAnimated = false;
+		m_pShader->m_animationStep = 0;
+	}
+
+
 	/*Render model using the color shader*/
-	m_pShader->Render( m_pD3D->GetDeviceContext(), m_pModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix );
+	//m_pShader->Render( m_pD3D->GetDeviceContext(), m_pModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix );
+
+
+	// Render the model using the light shader.
+	bool result;
+	result = m_pLightShader->Render( m_pD3D->GetDeviceContext(), m_pModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 
+		NULL, m_pLight->GetDirection(), m_pLight->GetDiffuseColor());
+	if(!result)
+	{
+		return false;
+	}
 
 	/*Render GUI*/
 	TwDraw();
@@ -150,9 +211,9 @@ bool Graphics::D3DRender()
 	return true;
 }
 
-void Graphics::SetModelData( DCEL* CHModel )
+void Graphics::SetModelData( DCEL* CHModel, vector<vector<VERTEX>>* animationSeq )
 {
-	m_pModel->UpdateModelData( m_pD3D->GetDevice(), CHModel );
+	m_pModel->UpdateModelData( m_pD3D->GetDevice(), CHModel, animationSeq );
 }
 
 void Graphics::Scale( float factor )

@@ -1,16 +1,18 @@
-#include "DivideAndConquerFor3DCH.h"
+ï»¿#include "DivideAndConquerFor3DCH.h"
 
 
-DivideAndConquerFor3DCH::DivideAndConquerFor3DCH()
+DivideAndConquerFor3DCH::DivideAndConquerFor3DCH(bool generateAnimation)
 {
 	m_pDCEL = NULL;
 	m_pDCEL = new DCEL;
+	this->generateAnimation = generateAnimation;
 }
 
-DivideAndConquerFor3DCH::DivideAndConquerFor3DCH( const DivideAndConquerFor3DCH& other )
+DivideAndConquerFor3DCH::DivideAndConquerFor3DCH( const DivideAndConquerFor3DCH& other, bool generateAnimation)
 {
 	m_pDCEL = NULL;
 	m_pDCEL = new DCEL;
+	this->generateAnimation = generateAnimation;
 }
 
 DivideAndConquerFor3DCH::~DivideAndConquerFor3DCH()
@@ -237,20 +239,28 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 		{
 			tmpVertexSet.push_back( &(*pVertex)[ i ] );
 		}
-		return BruceForceCH( &tmpVertexSet, offset );
+
+		DCEL dcel = BruceForceCH( &tmpVertexSet, offset );
+		if (generateAnimation)
+		{
+			for (list<FaceObject*>::iterator i=dcel.m_Faces->begin(); i!=dcel.m_Faces->end(); i++)
+				addOneStep( *i );
+
+		}
+		return dcel;
 	}
 
 	int midPoint = ( endPoint + startPoint ) * 0.5;
 	DCEL CH1 = DVCalculate3DConvexHull( pVertex, startPoint, midPoint, offset );
 	DCEL CH2 = DVCalculate3DConvexHull( pVertex, midPoint + 1, endPoint, midPoint + 1 );
-	
+
 	assert(CH1.checkIterators());
 	assert(CH2.checkIterators());
 
 	CH1.unsetVisited();
 	CH2.unsetVisited();
-	/*cout << CH1 << endl; char rjb; cin >> rjb; 
-	cout << CH2 << endl; cin >> rjb; */
+	//cout << CH1 << endl; char rjb; cin >> rjb; 
+	//cout << CH2 << endl; cin >> rjb; 
 
 	/*
 	* Phase 2: Merge two convex hulls
@@ -291,14 +301,14 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	}
 	
 //	 test
-	//cout << "ÇÐÏßÊÇ " << v1AtTanVO->v->id << ' ' << v2AtTanVO->v->id << endl;
+	//cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ " << v1AtTanVO->v->id << ' ' << v2AtTanVO->v->id << endl;
 	//for (list<VertexObject*>::iterator it=CH1.m_Vertexs->begin(); it!=CH1.m_Vertexs->end(); it++)
 	//{
 	//	D3DXVECTOR3 v((*it)->v->x - v1AtTanVO->v->x, (*it)->v->y - v1AtTanVO->v->y, (*it)->v->z - v1AtTanVO->v->z);
 	//	double dot = D3DXVec3Dot(&v, &planeNormal);
 	//	if (dot > 1E-5) 
 	//	{
-	//		cout << "RJB±¨¸æ£º ·¨ÏßÑôÎ®ÁË" << endl;
+	//		cout << "RJBï¿½ï¿½ï¿½æ£º ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î®ï¿½ï¿½" << endl;
 	//		break;
 	//	}
 	//}
@@ -308,7 +318,7 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 	//	double dot = D3DXVec3Dot(&v, &planeNormal);
 	//	if (dot > 1E-5) 
 	//	{
-	//		cout << "RJB±¨¸æ£º ·¨ÏßÑôÎ®ÁË" << endl;
+	//		cout << "RJBï¿½ï¿½ï¿½æ£º ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î®ï¿½ï¿½" << endl;
 	//		break;
 	//	}
 	//}
@@ -420,15 +430,19 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 
 		if( maxPlaneAngleE2 < maxPlaneAngleE1 )
 		{
+//cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½a: " << v1AtTanVO->v->id << ' ' << v2AtTanVO->v->id << ' ' << resultVertex1->v->id << endl;
 			v1AtTanVO = resultVertex1;
 			v1AtTanVO->status = 1;
 			planeNormal = maxTmpPlaneNormal1;
 			resultEdge1->visited = true;
 			CHCandidates.push_back( candidateList( resultVertex1, 0, resultEdge1 ) );
 
+
 		}
 		else
 		{
+//cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½b: " << v1AtTanVO->v->id << ' ' << v2AtTanVO->v->id << ' ' << resultVertex2->v->id << endl;
+
 			v2AtTanVO = resultVertex2;
 			v2AtTanVO->status = 1;
 			planeNormal = maxTmpPlaneNormal2;
@@ -604,6 +618,11 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 		CH1.add( tmpFaces[ i ]->attachedEdge );
 		CH1.add( tmpFaces[ i ]->attachedEdge->nextEdge );
 		CH1.add( tmpFaces[ i ]->attachedEdge->nextEdge->nextEdge );
+
+		if (generateAnimation)
+		{
+			addOneStep( tmpFaces[ i ] );
+		}
 	}
 	CH1.m_HalfEdges->splice( CH1.m_HalfEdges->end(), *CH2.m_HalfEdges );
 	CH1.m_Faces->splice( CH1.m_Faces->end(), *CH2.m_Faces );
@@ -821,9 +840,20 @@ void DivideAndConquerFor3DCH::findTangentFor3DCHs( vector<VertexObject*>* ch_one
 		}
 
 		/*cout << D3DXVec2Length(&currentTangent) << ' ' << D3DXVec2Length(&tmpLeft) << ' ' << D3DXVec2Length(&tmpRight) << endl;
-		cout << "ÄãÂè±ÆÅ¶" << " " << crossProductOne << ' ' << crossProductTwo << endl;
+		cout << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¶" << " " << crossProductOne << ' ' << crossProductTwo << endl;
 		cout << ch1Pointer << ' ' << ch2Pointer << endl;*/
 	} while ( keepDoing );
+
+
+	//for (int i=0; i<ch_one->size(); i++)
+	//	cout << (*ch_one)[i]->v->id << " ";
+	//cout << "\n-----------------------\n";
+	//for (int  i=0; i<ch_two->size(); i++)
+	//	cout << (*ch_two)[i]->v->id << " ";
+	//cout << "\n---------------------------------\n";
+
+	//int rjb; cin >> rjb;
+
 
 	*ch1_cand = (*ch_one)[ ch1Pointer ];
 	*ch2_cand = (*ch_two)[ ch2Pointer ];

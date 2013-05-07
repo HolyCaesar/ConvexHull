@@ -38,4 +38,8 @@ private:
 	ID3D11PixelShader* m_pixelShader;
 	ID3D11InputLayout* m_layout;
 	ID3D11Buffer* m_matrixBuffer;
+
+public:
+	bool m_animated;
+	int  m_animationStep;
 };

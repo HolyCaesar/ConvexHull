@@ -8,6 +8,7 @@ GUI::GUI( SystemClass* sysInstant )
 	m_RNGNum = 5;
 	m_RNGDropDownIndex = 0;
 	m_MethodDropDownIndex = 0;
+	m_DisplayDropDownIndex = 0;
 	m_Scale = 1.0f;
 	m_animated = false;
 }
@@ -40,16 +41,27 @@ void GUI::InitializeGUI( int width, int height, ID3D11Device* device )
 	dropdownlist2[1].Value = 1; dropdownlist2[1].Label = "DivideAndConquer Method";
 	m_MethodDropDownIndex = 0;
 
+	TwEnumVal* dropdownlist3 = new TwEnumVal[2];
+	dropdownlist3[0].Value = 0; dropdownlist3[0].Label = "Wired Frame Model";
+	dropdownlist3[1].Value = 1; dropdownlist3[1].Label = "Fill Solid Model";
+	m_DisplayDropDownIndex = 0;
+
 	TwType addRNGDropDownList = TwDefineEnum( "rng_dropdowlist", dropdownlist, 4 );
 	TwType addRNGDropDownList2 = TwDefineEnum( "method_dropdowlist", dropdownlist2, 2 );
+	TwType addRNGDropDownList3 = TwDefineEnum( "displaymodel_dropdowlist", dropdownlist3, 2 );
 
 	TwAddVarCB( m_pTwBar, "Random Number Generator", addRNGDropDownList, GUI::SetDropDownListItem, GUI::GetDropDownListItem, this, " group='GeneralParameters' keyIncr=Backspace keyDecr=SHIFT+Backspace help='Stop or change the rotation mode.' " );
 	TwAddVarCB( m_pTwBar, "Methods for 3DCH", addRNGDropDownList2, GUI::SetComputationMethod, GUI::GetComputationMethod, this, " group='GeneralParameters' keyIncr=o keyDecr=p help='Stop or change the rotation mode.' " );
 	TwAddVarCB( m_pTwBar, "Number of Random Value", TW_TYPE_UINT32, GUI::SetRNGNum, GUI::GetRNGNum, this, " group='GeneralParameters' min=5 max=2000 step=1 keyincr=+ keydecr=-" );
 	TwAddVarCB( m_pTwBar, "Scale Image", TW_TYPE_FLOAT, GUI::SetScale, GUI::GetScale, this, " group='GraphicsParameters' min=0.05 max=20 step=0.05 keyincr=n keydecr=m" );
+	TwAddVarCB( m_pTwBar, "Display Model", addRNGDropDownList3, GUI::SetDisplayModel, GUI::GetDisplayModel, this, " group='GraphicsParameters' keyIncr=c keyDecr=v help='Stop or change the rotation mode.' " );
 	TwAddVarRW( m_pTwBar, "Rotation", TW_TYPE_QUAT4F, &Quaternion::g_SpongeRotation, "opened=true axisz=-z group=GraphicsParameters");
-	TwAddVarCB( m_pTwBar, "Ambient Occlusion", TW_TYPE_BOOLCPP, GUI::SetAnimated, GUI::GetAnimated, this, "group=Animation key=u");
+	TwAddVarCB( m_pTwBar, "Animation Enabled", TW_TYPE_BOOLCPP, GUI::SetAnimated, GUI::GetAnimated, this, "group=Animation key=u");
+}
 
+bool GUI::GetAnimatedInfo()
+{
+	return m_animated;
 }
 
 void TW_CALL GUI::SetDropDownListItem( const void *value, void * clientData )
@@ -77,6 +89,7 @@ void TW_CALL GUI::GetRNGNum( void *value, void * clientData )
 void TW_CALL GUI::SetComputationMethod( const void *value, void * clientData )
 {
 	int model = *(int*)value;
+	((GUI*)clientData)->m_MethodDropDownIndex = model;
 	((GUI*)clientData)->m_sysHandler->Set3DCHAlgorithm( model );
 }
 void TW_CALL GUI::GetComputationMethod( void *value, void * clientData )
@@ -104,4 +117,15 @@ void TW_CALL GUI::SetAnimated( const void *value, void * clientData )
 void TW_CALL GUI::GetAnimated( void *value, void * clientData )
 {
 	*static_cast<bool *>(value) = ((GUI*)clientData)->m_animated;
+}
+
+void TW_CALL GUI::SetDisplayModel( const void *value, void * clientData )
+{
+	int index = *(int*)value;
+	((GUI*)clientData)->m_DisplayDropDownIndex = index;
+	//((GUI*)clientData)->m_sysHandler->SetRNGModel( index );
+}
+void TW_CALL GUI::GetDisplayModel( void *value, void * clientData )
+{
+	*(int*)value = ((GUI*)clientData)->m_DisplayDropDownIndex;
 }

@@ -21,11 +21,11 @@ SystemClass::SystemClass()
 	m_updateModelFlag = false;
 
 	pointGeneratorMode = 1;
-	pointNumber = 100;
-	PointGenerator::seed();
+	pointNumber = 5;
+	//PointGenerator::seed();
+	m_divideandconquerMethod = 0;
 	m_testPointSet = PointGenerator::pointsOnSphere( 10 );
-	m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
-	m_divideandconquerMethod = new DivideAndConquerFor3DCH;
+	m_incrementalMethod = 0;
 }
 
 SystemClass::SystemClass( const SystemClass& other )
@@ -92,8 +92,6 @@ bool SystemClass::Initialize()
 		return false;
 	}
 
-	m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
-
 	/*Initialize the GUI*/
 	m_gui = new GUI( this );
 	if( !m_gui )
@@ -101,6 +99,20 @@ bool SystemClass::Initialize()
 		return false;
 	}
 	m_gui->InitializeGUI( 800, 600, m_graphicsEngine->GetD3DDevice() );
+
+	m_divideandconquerMethod = new DivideAndConquerFor3DCH( m_gui->GetAnimatedInfo() );
+	if( !m_divideandconquerMethod )
+	{
+		return false;
+	}
+
+	m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet, m_gui->GetAnimatedInfo() );
+	if( !m_incrementalMethod )
+	{
+		return false;
+	}
+	
+	m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel), NULL );
 
 	return true;
 }
@@ -251,14 +263,33 @@ bool SystemClass::Frame()
 					delete m_incrementalMethod;
 				}
 
-				m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet );
-				m_graphicsEngine->SetModelData( &(m_incrementalMethod->dcel) );
+				m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet, m_gui->GetAnimatedInfo() );
+				if( m_gui->GetAnimatedInfo() )
+				{
+					m_graphicsEngine->SetModelData( NULL, &( m_incrementalMethod->animation ) );
+				}
+				else
+				{
+					m_graphicsEngine->SetModelData( &( m_incrementalMethod->dcel ), NULL );
+				}
+				
 				break;
 			}
 		case 1:
 			{
 				sort( m_testPointSet.begin(), m_testPointSet.end(), cmp );
-				m_graphicsEngine->SetModelData( &( m_divideandconquerMethod->DVCalculate3DConvexHull( &m_testPointSet, 0, m_testPointSet.size() - 1, 0 ) ) );
+				m_divideandconquerMethod->generateAnimation = m_gui->GetAnimatedInfo();
+				m_divideandconquerMethod->animation.clear();
+
+				if( m_gui->GetAnimatedInfo() )
+				{
+					m_divideandconquerMethod->DVCalculate3DConvexHull( &m_testPointSet, 0, m_testPointSet.size() - 1, 0 );
+					m_graphicsEngine->SetModelData( NULL, &( m_divideandconquerMethod->animation ) );
+				}
+				else
+				{
+					m_graphicsEngine->SetModelData( &( m_divideandconquerMethod->DVCalculate3DConvexHull( &m_testPointSet, 0, m_testPointSet.size() - 1, 0 ) ), NULL );
+				}
 			}
 			break;
 		default:

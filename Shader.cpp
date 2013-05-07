@@ -6,6 +6,8 @@ Shader::Shader()
 	m_pixelShader = 0;
 	m_layout = 0;
 	m_matrixBuffer = 0;
+	m_animated = false;
+	m_animationStep = 0;
 }
 
 Shader::Shader( const Shader& other )
@@ -240,6 +242,8 @@ bool Shader::SetShaderParameters( ID3D11DeviceContext* deviceContext,
 	return true;
 }
 
+using namespace std;
+#include <iostream>
 void Shader::RenderShader( ID3D11DeviceContext* deviceContext, int indexCount )
 {
 	/*Set the vertex input layout.*/
@@ -250,7 +254,21 @@ void Shader::RenderShader( ID3D11DeviceContext* deviceContext, int indexCount )
 	deviceContext->PSSetShader( m_pixelShader, NULL, 0 );
 
 	/*Render the triangle.*/
-	deviceContext->DrawIndexed( indexCount, 0, 0 );
+	//deviceContext->DrawIndexed( indexCount, 0, 0 );
+	if( m_animated )
+	{
+		deviceContext->DrawIndexed( m_animationStep, 0, 0 );
+		m_animationStep += 3;
+
+		if( m_animationStep == indexCount )
+		{
+			m_animated = false;
+		}
+	}
+	else
+	{
+		deviceContext->DrawIndexed( indexCount, 0, 0 );
+	}
 
 	return;
 }
