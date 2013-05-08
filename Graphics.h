@@ -12,6 +12,9 @@
 #include "LightShader.h"
 #include "Light.h"
 #include "DCEL.h"
+#include "DebugWindows.h"
+#include "RenderTexture.h"
+#include "TextureShader.h"
 
 #pragma warning( once : 4005 )
 
@@ -28,11 +31,13 @@ public:
 
 	void SetYawPitchRoll( float rx, float ry, float rz );
 	void Scale( float factor );
-	void SetModelData( DCEL* CHModel, vector<vector<VERTEX>>* animationSeq );
+	void SetModelData( DCEL* CHModel, vector<VERTEX>* animationSeq );
 	ID3D11Device* GetD3DDevice();
 
 private:
 	bool D3DRender();
+	bool D3DRenderToTexture();
+	bool D3DRenderToScene( bool animated = true );
 
 private:
 	D3D     *m_pD3D;
@@ -41,6 +46,9 @@ private:
 	Camera  *m_pCamera;
 	LightShaderClass *m_pLightShader;
 	LightClass       *m_pLight;
+	RenderTextureClass* m_pRenderTexture;
+	DebugWindowClass* m_pDebugWindow;
+	TextureShaderClass* m_pTextureShader;
 
 private:
 	float   m_xRotation;

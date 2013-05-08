@@ -32,6 +32,9 @@ public:
 	void SetRNGModel( unsigned int model );
 	void SetPointNum( unsigned int num );
 	void SetScale( float factor );
+	void SetUpdateModelFlag( bool flag );
+	void cleanIncrementalMethod(void);
+	void cleanDivideAndConquerMethod(void);
 
 private:
 	bool Frame();

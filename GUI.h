@@ -26,10 +26,16 @@ private:
 	float m_Scale;
 	bool m_animated;
 
+	unsigned int m_animationStep;
+	unsigned int m_minStep;
+	unsigned int m_maxStep;
+
 	SystemClass* m_sysHandler;
 
 public:
 	bool GetAnimatedInfo();
+	unsigned int GetAnimationStep();
+	void SetMaxStep( unsigned int step );
 
 	/*
 	* AntTweek Call Back functions
@@ -52,4 +58,7 @@ private:
 
 	static void TW_CALL SetDisplayModel( const void *value, void * clientData );
 	static void TW_CALL GetDisplayModel( void *value, void * clientData );
+
+	static void TW_CALL SetAnimationStep( const void *value, void * clientData );
+	static void TW_CALL GetAnimationStep( void *value, void * clientData );
 };

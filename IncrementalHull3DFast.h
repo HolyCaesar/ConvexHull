@@ -35,14 +35,15 @@ class IncrementalHull3DFast
 	list<HalfedgeObject*> trashE;
 	list<FaceObject*> trashF;
 
-	void addOneStep(FaceObject *face)
+	void addOneStep(void)
 	{
 		vector<VERTEX> res;
-		if (animation.size() > 0) 
-			res = animation[ animation.size() - 1 ];
-		HalfedgeObject* e = face->attachedEdge;
-		for (int i=0; i<3; i++, e = e->nextEdge)
-			res.push_back( *e->origin->v );
+		for (list<FaceObject*>::iterator i=dcel.m_Faces->begin(); i!=dcel.m_Faces->end(); i++)
+		{
+			res.push_back(*(*i)->attachedEdge->origin->v);
+			res.push_back(*(*i)->attachedEdge->nextEdge->origin->v);
+			res.push_back(*(*i)->attachedEdge->nextEdge->nextEdge->origin->v);
+		}
 		animation.push_back( res );		
 	}
 
@@ -76,6 +77,7 @@ class IncrementalHull3DFast
 		f->attachedEdge = e1;
 
 		dcel.add(f);
+
 		dcel.add(e1);
 		dcel.add(e2);
 		dcel.add(e3);
@@ -93,6 +95,10 @@ class IncrementalHull3DFast
 		e1->nextEdge = e2; e2->nextEdge = e3; e3->nextEdge = e1;
 		e1->preEdge = e3; e2->preEdge = e1; e3->preEdge = e2;
 
+		if (generateAnimation)
+		{
+			addOneStep();
+		}
 		return f;
 	}
 
@@ -342,11 +348,7 @@ public:
 		fill(outDegree.begin(), outDegree.end(), 0);
 
 		createTetrahedron();
-		if (generateAnimation)
-		{
-			for (list<FaceObject*>::iterator i=dcel.m_Faces->begin(); i!=dcel.m_Faces->end(); i++)
-				addOneStep( *i );
-		}
+
 		calcConvexHull();
 	}
 	void calcConvexHull(void)
@@ -384,10 +386,6 @@ public:
 				int r = tmp[(j+1) % len];
 
 				tmpFace[j] = addTriangle(p, q, r);
-				if (generateAnimation)
-				{
-					addOneStep( tmpFace[j] );
-				}
 			}
 
 			for (int j=0; j<len; j++) {

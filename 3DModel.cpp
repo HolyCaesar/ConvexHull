@@ -169,7 +169,7 @@ void Model3D::RenderBuffers( ID3D11DeviceContext* deviceContext )
 	deviceContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 }
 
-bool Model3D::UpdateModelData( ID3D11Device* device, DCEL* CHModel, vector<vector<VERTEX>>* animationSeq )
+bool Model3D::UpdateModelData( ID3D11Device* device, DCEL* CHModel, vector<VERTEX>* animationSeq )
 {
 	VertexType* vertices;
 	VertexTypeShaded* verticesShaded;
@@ -183,7 +183,7 @@ bool Model3D::UpdateModelData( ID3D11Device* device, DCEL* CHModel, vector<vecto
 	}
 	else if( animationSeq != NULL )
 	{
-		m_vertexCount = animationSeq->back().size();
+		m_vertexCount = animationSeq->size();
 		m_indexCount  = m_vertexCount;
 		m_isAnimated  = true;
 	}
@@ -194,11 +194,11 @@ bool Model3D::UpdateModelData( ID3D11Device* device, DCEL* CHModel, vector<vecto
 		return false;
 	}
 
-	vertices = new VertexType[ m_vertexCount ];
-	if( !vertices )
-	{
-		return false;
-	}
+	//vertices = new VertexType[ m_vertexCount ];
+	//if( !vertices )
+	//{
+	//	return false;
+	//}
 
 	indices = new unsigned long[ m_indexCount ];
 	if( !indices )
@@ -311,7 +311,7 @@ bool Model3D::UpdateModelData( ID3D11Device* device, DCEL* CHModel, vector<vecto
 	return true;
 }
 
-void Model3D::LoadModelData( VertexTypeShaded **verticesVec, unsigned long **indicesVec, DCEL* CHModel, vector<vector<VERTEX>>* animationSeq )
+void Model3D::LoadModelData( VertexTypeShaded **verticesVec, unsigned long **indicesVec, DCEL* CHModel, vector<VERTEX>* animationSeq )
 {
 	if( CHModel != NULL )
 	{
@@ -344,19 +344,28 @@ void Model3D::LoadModelData( VertexTypeShaded **verticesVec, unsigned long **ind
 	}
 	else
 	{
-		unsigned int counter = 0;
+		vector<VERTEX> &v = *animationSeq;
+		m_vertexCount = v.size();
+
 		for( int i = 0; i < m_vertexCount; i++ )
 		{
-			float x = animationSeq->back()[ i ].x;
-			float y = animationSeq->back()[ i ].y;
-			float z = animationSeq->back()[ i ].z;
+			float x = v[ i ].x;
+			float y = v[ i ].y;
+			float z = v[ i ].z;
 			(*verticesVec)[ i ].position = D3DXVECTOR3( x, y, z );
-			(*verticesVec)[ i ].color = D3DXVECTOR4( 1.0f * ( ( i % 3 ) == 0 ), 1.0f * ( ( ( i + 1 ) % 3 ) == 0 ), 1.0f * ( ( ( i + 2 ) % 3 ) == 0 ), 1.0f );
-			(*verticesVec)[ i ].normal = D3DXVECTOR3( 1.0f, 1.0f, 1.0f );
-
+			(*verticesVec)[ i ].color = D3DXVECTOR4( 0.0f, 1.0f, 0.0f, 1.0f );
 			(*indicesVec)[ i ] = i;
 
-			counter += 3;
+			//(*verticesVec)[ i ].color = D3DXVECTOR4( 1.0f * ( ( i % 3 ) == 0 ), 1.0f * ( ( ( i + 1 ) % 3 ) == 0 ), 1.0f * ( ( ( i + 2 ) % 3 ) == 0 ), 1.0f );
+			//(*verticesVec)[ i ].normal = D3DXVECTOR3( 1.0f, 1.0f, 1.0f );
+
+			if (i % 3 == 2)
+			{
+				VECTOR normal = VECTOR(v[i - 1] - v[i - 2]).cross(VECTOR(v[i] - v[i - 2])).normalize();
+				(*verticesVec)[ i ].normal = D3DXVECTOR3( normal.x, normal.y, normal.z );
+				(*verticesVec)[ i - 1 ].normal = D3DXVECTOR3( normal.x, normal.y, normal.z );
+				(*verticesVec)[ i - 2 ].normal = D3DXVECTOR3( normal.x, normal.y, normal.z );
+			}
 		}
 	}
 }

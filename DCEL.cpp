@@ -54,7 +54,7 @@ void DCEL::createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX*>* pVertex, c
 		vo->leaving = NULL;
 		add( vo );
 	}
-	
+
 	// Buiuild halfedges that are belong to this current face
 	for( int i = 0; i < pTriangles->size(); i++ )
 	{
@@ -62,6 +62,7 @@ void DCEL::createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX*>* pVertex, c
 		int pointOneIndex = triangle.p1.pointOneIndex;
 		int pointTwoIndex = triangle.p2.pointTwoIndex;
 		int pointThreeIndex = triangle.p3.pointThreeIndex;
+
 		VertexObject* pointOnePtr = NULL;
 		VertexObject* pointTwoPtr = NULL;
 		VertexObject* pointThreePtr = NULL;
@@ -74,17 +75,18 @@ void DCEL::createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX*>* pVertex, c
 			if( counter == pointOneIndex )
 			{
 				pointOnePtr = *vlistIter;
-			}
-			else if( counter == pointTwoIndex )
+			}		
+			if( counter == pointTwoIndex )
 			{
 				pointTwoPtr = *vlistIter;
-			}
-			else if( counter == pointThreeIndex )
+			}		
+			if( counter == pointThreeIndex )
 			{
 				pointThreePtr = *vlistIter;
 			}
 		}
-		
+
+
 		// Create three interior halfedges, their twins will be assigned later
 		HalfedgeObject *hEdge1 = new HalfedgeObject, *hEdge2 = new HalfedgeObject, *hEdge3 = new HalfedgeObject;
 		add( hEdge1 );
@@ -93,6 +95,7 @@ void DCEL::createDCEL( vector<TRIANGLE>* pTriangles, vector<VERTEX*>* pVertex, c
 
 		FaceObject* face = new FaceObject;
 		face->attachedEdge = hEdge1;
+		face->normal = VECTOR(*pointTwoPtr->v - *pointOnePtr->v).normalize().cross(*pointThreePtr->v - *pointOnePtr->v).normalize();
 		add( face );
 
 		if( !pointOnePtr->leaving )
@@ -176,7 +179,7 @@ void DCEL::deleteFace( FaceObject* faceObject )
 	//delete faceAttachedEdge2;
 	remove( faceAttachedEdge3 );
 	//delete faceAttachedEdge3;
-	
+
 	// Remove this face
 	remove( faceObject );
 }

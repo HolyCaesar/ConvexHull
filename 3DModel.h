@@ -14,7 +14,7 @@ public:
 	bool Initialize( ID3D11Device* );
 	void ShutDown();
 	void RenderModel( ID3D11DeviceContext* );
-	bool UpdateModelData( ID3D11Device* device, DCEL* CHModel, vector<vector<VERTEX>>* animationSeq );
+	bool UpdateModelData( ID3D11Device* device, DCEL* CHModel, vector<VERTEX>* animationSeq );
 
 	int GetIndexCount();
 
@@ -35,7 +35,7 @@ private:
 	bool InitializeBuffers( ID3D11Device* );
 	void ShutDownBuffers();
 	void RenderBuffers( ID3D11DeviceContext* );
-	void LoadModelData( VertexTypeShaded **verticesVec, unsigned long **indicesVec, DCEL* CHModel, vector<vector<VERTEX>>* animationSeq );
+	void LoadModelData( VertexTypeShaded **verticesVec, unsigned long **indicesVec, DCEL* CHModel, vector<VERTEX>* animationSeq );
 
 private:
 	ID3D11Buffer *m_pVertexBuffer;

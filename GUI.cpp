@@ -11,6 +11,9 @@ GUI::GUI( SystemClass* sysInstant )
 	m_DisplayDropDownIndex = 0;
 	m_Scale = 1.0f;
 	m_animated = false;
+	m_animationStep = 0;
+	m_minStep = 0;
+	m_maxStep = 0;
 }
 
 GUI::~GUI()
@@ -20,7 +23,7 @@ GUI::~GUI()
 
 void GUI::InitializeGUI( int width, int height, ID3D11Device* device )
 {
-	/*Initialize the UI with AntTweek*/
+	/*Initialize the GUI*/
 	TwInit( TW_DIRECT3D11, device );
 	TwWindowSize( width, height );
 	m_pTwBar = TwNewBar( "ConvexHull Demo Panel" );
@@ -57,6 +60,7 @@ void GUI::InitializeGUI( int width, int height, ID3D11Device* device )
 	TwAddVarCB( m_pTwBar, "Display Model", addRNGDropDownList3, GUI::SetDisplayModel, GUI::GetDisplayModel, this, " group='GraphicsParameters' keyIncr=c keyDecr=v help='Stop or change the rotation mode.' " );
 	TwAddVarRW( m_pTwBar, "Rotation", TW_TYPE_QUAT4F, &Quaternion::g_SpongeRotation, "opened=true axisz=-z group=GraphicsParameters");
 	TwAddVarCB( m_pTwBar, "Animation Enabled", TW_TYPE_BOOLCPP, GUI::SetAnimated, GUI::GetAnimated, this, "group=Animation key=u");
+	TwAddVarCB( m_pTwBar, "Animation Steps", TW_TYPE_UINT32, GUI::SetAnimationStep, GUI::GetAnimationStep, this, "group=Animation min=0 key=u");
 }
 
 bool GUI::GetAnimatedInfo()
@@ -64,11 +68,22 @@ bool GUI::GetAnimatedInfo()
 	return m_animated;
 }
 
+unsigned int GUI::GetAnimationStep()
+{
+	return m_animationStep;
+}
+
+void GUI::SetMaxStep(unsigned int step)
+{
+	m_maxStep = step;
+}
+
 void TW_CALL GUI::SetDropDownListItem( const void *value, void * clientData )
 {
 	int index = *(int*)value;
 	((GUI*)clientData)->m_RNGDropDownIndex = index;
 	((GUI*)clientData)->m_sysHandler->SetRNGModel( index );
+	((GUI*)clientData)->m_animationStep = 0;
 }
 void TW_CALL GUI::GetDropDownListItem( void *value, void * clientData )
 {
@@ -80,6 +95,7 @@ void TW_CALL GUI::SetRNGNum( const void *value, void * clientData )
 	unsigned int number = *(unsigned int*)value;
 	((GUI*)clientData)->m_RNGNum = number;
 	((GUI*)clientData)->m_sysHandler->SetPointNum( number );
+	((GUI*)clientData)->m_animationStep = 0;
 }
 void TW_CALL GUI::GetRNGNum( void *value, void * clientData )
 {
@@ -91,6 +107,7 @@ void TW_CALL GUI::SetComputationMethod( const void *value, void * clientData )
 	int model = *(int*)value;
 	((GUI*)clientData)->m_MethodDropDownIndex = model;
 	((GUI*)clientData)->m_sysHandler->Set3DCHAlgorithm( model );
+	((GUI*)clientData)->m_animationStep = 0;
 }
 void TW_CALL GUI::GetComputationMethod( void *value, void * clientData )
 {
@@ -112,7 +129,17 @@ void TW_CALL GUI::GetScale( void *value, void * clientData )
 void TW_CALL GUI::SetAnimated( const void *value, void * clientData )
 {
 	((GUI*)clientData)->m_animated = *(bool*)value;
-	//((GUI*)clientData)->m_sysHandler->SetScale( scale );
+	if ( *(bool*)value == false)
+	{
+		((GUI*)clientData)->m_maxStep = 0;
+		((GUI*)clientData)->m_minStep = 0;
+		((GUI*)clientData)->m_animationStep = 0;
+	}
+	else
+	{
+		((GUI*)clientData)->m_sysHandler->cleanIncrementalMethod();
+		((GUI*)clientData)->m_sysHandler->cleanDivideAndConquerMethod();
+	}
 }
 void TW_CALL GUI::GetAnimated( void *value, void * clientData )
 {
@@ -128,4 +155,18 @@ void TW_CALL GUI::SetDisplayModel( const void *value, void * clientData )
 void TW_CALL GUI::GetDisplayModel( void *value, void * clientData )
 {
 	*(int*)value = ((GUI*)clientData)->m_DisplayDropDownIndex;
+}
+
+void TW_CALL GUI::SetAnimationStep( const void *value, void * clientData )
+{
+	unsigned int index = *(unsigned int*)value;
+	if (index >= ((GUI*)clientData)->m_minStep && index <= ((GUI*)clientData)->m_maxStep)
+	{
+		((GUI*)clientData)->m_animationStep = *(unsigned int*)value;
+		((GUI*)clientData)->m_sysHandler->SetUpdateModelFlag( true );
+	}
+}
+void TW_CALL GUI::GetAnimationStep( void *value, void * clientData )
+{
+	*(unsigned int*)value = ((GUI*)clientData)->m_animationStep;
 }

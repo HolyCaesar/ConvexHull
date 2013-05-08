@@ -12,6 +12,7 @@ D3D::D3D()
 	m_depthStencilState = NULL;
 	m_depthStencilView = NULL;
 	m_rasterState = NULL;
+	m_depthDisabledStencilState = NULL;
 }
 
 D3D::D3D( const D3D& other )
@@ -278,6 +279,30 @@ bool D3D::Initialize( int screenWidth, int screenHeight, bool vsync, HWND hwnd, 
 		/*Create an orthographics projecton matrix for 2D rendering*/
 		D3DXMatrixOrthoLH( &m_orthoMatrix, (float)screenWidth, (float)screenHeight, screenNear, screenDepth );
 
+		D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
+		/* Clear the second depth stencil state before setting the parameters. */
+		ZeroMemory( &depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc) );
+
+		/* Now create a second depth stencil state which turns off the Z buffer for 2D rendering.  The only difference is */
+		/* that DepthEnable is set to false, all other parameters are the same as the other depth stencil state. */
+		depthDisabledStencilDesc.DepthEnable = false;
+		depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		depthDisabledStencilDesc.StencilEnable = true;
+		depthDisabledStencilDesc.StencilReadMask = 0xFF;
+		depthDisabledStencilDesc.StencilWriteMask = 0xFF;
+		depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+		depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+		depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+		/* Create the state using the device. */
+		m_device->CreateDepthStencilState( &depthDisabledStencilDesc, &m_depthDisabledStencilState );
+
 	}catch( int& e )
 	{
 		cout << "Initialize D3D failed" << endl;
@@ -341,6 +366,12 @@ void D3D::Shutdown()
 		m_swapChain->Release();
 		m_swapChain = 0;
 	}
+
+	if( m_depthDisabledStencilState )
+	{
+		m_depthDisabledStencilState->Release();
+		m_depthDisabledStencilState = 0;
+	}
 }
 
 void D3D::BeginScene( float red, float green, float blue, float alpha )
@@ -399,4 +430,25 @@ void D3D::GetVideoCardInfo( char* cardName, int& memory )
 {
 	strcpy_s( cardName, 128, m_videoCardDescription );
 	memory = m_videoCardMemory;
+}
+
+ID3D11DepthStencilView* D3D::GetDepthStencilView()
+{
+	return m_depthStencilView;
+}
+
+void D3D::SetBackBufferRenderTarget()
+{
+	/* Bind the render target view and depth stencil buffer to the output render pipeline. */
+	m_deviceContext->OMSetRenderTargets( 1, &m_renderTargetView, m_depthStencilView );
+}
+
+void D3D::TurnZBufferOn()
+{
+	m_deviceContext->OMSetDepthStencilState( m_depthStencilState, 1 );
+}
+
+void D3D::TurnZBufferOff()
+{
+	m_deviceContext->OMSetDepthStencilState( m_depthDisabledStencilState, 1 );
 }

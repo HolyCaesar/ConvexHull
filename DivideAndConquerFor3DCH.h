@@ -41,4 +41,15 @@ private:
 			res.push_back( *e->origin->v );
 		animation.push_back( res );		
 	}
+	void addOneStep(DCEL *dcel)
+	{
+		vector<VERTEX> res;
+		for (list<FaceObject*>::iterator i=dcel->m_Faces->begin(); i!=dcel->m_Faces->end(); i++)
+		{
+			res.push_back( *(*i)->attachedEdge->origin->v) ;
+			res.push_back( *(*i)->attachedEdge->nextEdge->origin->v );
+			res.push_back( *(*i)->attachedEdge->nextEdge->nextEdge->origin->v );
+		}
+		animation.push_back( res );
+	}
 };

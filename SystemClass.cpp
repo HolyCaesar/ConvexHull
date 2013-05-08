@@ -98,7 +98,7 @@ bool SystemClass::Initialize()
 	{
 		return false;
 	}
-	m_gui->InitializeGUI( 800, 600, m_graphicsEngine->GetD3DDevice() );
+	m_gui->InitializeGUI( m_screenWidth, m_screenHeight, m_graphicsEngine->GetD3DDevice() );
 
 	m_divideandconquerMethod = new DivideAndConquerFor3DCH( m_gui->GetAnimatedInfo() );
 	if( !m_divideandconquerMethod )
@@ -153,10 +153,6 @@ void SystemClass::Run()
 		/*Handle the windows messages.*/
 		if( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )
 		{
-			if( TwEventWin( m_hwnd, msg.message, msg.wParam, msg.lParam ) ) {
-				//_dirty = true;
-				continue;
-			}
 			if(msg.message == WM_QUIT) { done = true; }
 			else
 			{
@@ -199,36 +195,6 @@ bool SystemClass::Frame()
 		return false;
 	}
 
-	if( m_input->IsKeyDown( 'W' ) )
-	{
-		m_graphicsEngine->SetYawPitchRoll( 0.1, 0.0, 0.0 );
-	}
-
-	if( m_input->IsKeyDown( 'S' ) )
-	{
-		m_graphicsEngine->SetYawPitchRoll( -0.1, 0.0, 0.0 );
-	}
-
-	if( m_input->IsKeyDown( 'A' ) )
-	{
-		m_graphicsEngine->SetYawPitchRoll( 0.0, 0.1, 0.0 );
-	}
-
-	if( m_input->IsKeyDown( 'D' ) )
-	{
-		m_graphicsEngine->SetYawPitchRoll( 0.0, -0.1, 0.0 );
-	}
-
-	if( m_input->IsKeyDown( 'Q' ) )
-	{
-		m_graphicsEngine->SetYawPitchRoll( 0.0, 0.0, 0.1 );
-	}
-
-	if( m_input->IsKeyDown( 'E' ) )
-	{
-		m_graphicsEngine->SetYawPitchRoll( 0.0, 0.0, -0.1 );
-	}
-
 	if( m_updateModelFlag )
 	{
 		// Generate the point set
@@ -258,36 +224,47 @@ bool SystemClass::Frame()
 		{
 		case 0:
 			{
-				if( m_incrementalMethod )
-				{
-					delete m_incrementalMethod;
-				}
-
-				m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet, m_gui->GetAnimatedInfo() );
 				if( m_gui->GetAnimatedInfo() )
 				{
-					m_graphicsEngine->SetModelData( NULL, &( m_incrementalMethod->animation ) );
+					if( !m_incrementalMethod )
+					{
+						m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet, m_gui->GetAnimatedInfo() );
+					}
+
+					m_gui->SetMaxStep( m_incrementalMethod->animation.size() - 1 );
+					m_graphicsEngine->SetModelData( NULL, &( m_incrementalMethod->animation[ m_gui->GetAnimationStep() ] ) );
 				}
 				else
 				{
+					if( m_incrementalMethod )
+					{
+						delete m_incrementalMethod;
+					}
+					m_incrementalMethod = new IncrementalHull3DFast( m_testPointSet, m_gui->GetAnimatedInfo() );
+
 					m_graphicsEngine->SetModelData( &( m_incrementalMethod->dcel ), NULL );
 				}
-				
 				break;
 			}
 		case 1:
 			{
 				sort( m_testPointSet.begin(), m_testPointSet.end(), cmp );
-				m_divideandconquerMethod->generateAnimation = m_gui->GetAnimatedInfo();
-				m_divideandconquerMethod->animation.clear();
 
 				if( m_gui->GetAnimatedInfo() )
 				{
-					m_divideandconquerMethod->DVCalculate3DConvexHull( &m_testPointSet, 0, m_testPointSet.size() - 1, 0 );
-					m_graphicsEngine->SetModelData( NULL, &( m_divideandconquerMethod->animation ) );
+					if ( !m_divideandconquerMethod->generateAnimation )
+					{
+						m_divideandconquerMethod->generateAnimation = true;
+						m_divideandconquerMethod->animation.clear();
+						m_divideandconquerMethod->DVCalculate3DConvexHull( &m_testPointSet, 0, m_testPointSet.size() - 1, 0 );
+					}
+					m_gui->SetMaxStep( m_divideandconquerMethod->animation.size() - 1 );
+					m_graphicsEngine->SetModelData( NULL, &( m_divideandconquerMethod->animation[ m_gui->GetAnimationStep() ] ) );
 				}
 				else
 				{
+					m_divideandconquerMethod->animation.clear();
+					m_divideandconquerMethod->generateAnimation = m_gui->GetAnimatedInfo();
 					m_graphicsEngine->SetModelData( &( m_divideandconquerMethod->DVCalculate3DConvexHull( &m_testPointSet, 0, m_testPointSet.size() - 1, 0 ) ), NULL );
 				}
 			}
@@ -313,6 +290,10 @@ bool SystemClass::Frame()
 
 LRESULT CALLBACK SystemClass::MessageHandler( HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam )
 {
+	if( TwEventWin( m_hwnd, umsg, wparam, lparam ) ) {
+		return 0;
+	}
+
 	switch( umsg )
 	{
 		/*Check if a key has been pressed on the keyboard.*/
@@ -464,4 +445,23 @@ LRESULT CALLBACK WndProc( HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam
 			return ApplicationHandle->MessageHandler( hwnd, umessage, wparam, lparam );
 		}
 	}
+}
+
+void SystemClass::SetUpdateModelFlag( bool flag )
+{
+	m_updateModelFlag = flag;
+}
+
+void SystemClass::cleanIncrementalMethod(void)
+{
+	if ( m_incrementalMethod )
+	{
+		delete m_incrementalMethod;
+		m_incrementalMethod = NULL;
+	}
+}
+
+void SystemClass::cleanDivideAndConquerMethod(void)
+{
+	m_divideandconquerMethod->generateAnimation = false;
 }

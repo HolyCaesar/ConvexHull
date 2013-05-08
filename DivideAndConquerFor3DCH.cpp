@@ -76,33 +76,6 @@ DCEL DivideAndConquerFor3DCH::BruceForceCH( vector<VERTEX*>* pVertex, const unsi
 
 		bool rayIntersect = !isNormal(ray, triangleSet[i], pVertex);
 		bool invRayIntersect = !isNormal(invRay, triangleSet[i], pVertex);
-		
-		/*
-		for( int j = 0; j < triangleSet.size(); j++ )
-		{
-			if( j == i ) continue;
-
-			rayIntersect = RayTriangleIntersection( ray, triangleSet[ j ], pVertex );
-
-			if( rayIntersect )
-			{
-				break;
-			}
-		}
-
-		for( int j = 0; j < triangleSet.size(); j++ )
-		{
-			if( j == i ) continue;
-
-			test = i;
-			invRayIntersect = RayTriangleIntersection( invRay, triangleSet[ j ], pVertex );
-
-			if( invRayIntersect )
-			{
-				break;
-			}
-		}
-		*/
 
 		// This is the face that contribute to the convex hull and find its vertices order
 		if( rayIntersect == false && invRayIntersect == true )
@@ -612,25 +585,31 @@ DCEL DivideAndConquerFor3DCH::DVCalculate3DConvexHull( vector<VERTEX>* pVertex, 
 
 	}
 
+
+
+	CH1.m_HalfEdges->splice( CH1.m_HalfEdges->end(), *CH2.m_HalfEdges );
+	CH1.m_Faces->splice( CH1.m_Faces->end(), *CH2.m_Faces );
+	CH1.m_Vertexs->splice( CH1.m_Vertexs->end(), *CH2.m_Vertexs );
+
 	for( int i = 0; i < tmpFaces.size(); i++ )
 	{
 		CH1.add( tmpFaces[ i ] );
 		CH1.add( tmpFaces[ i ]->attachedEdge );
 		CH1.add( tmpFaces[ i ]->attachedEdge->nextEdge );
 		CH1.add( tmpFaces[ i ]->attachedEdge->nextEdge->nextEdge );
-
+		tmpFaces[ i ]->normal = VECTOR(*tmpFaces[ i ]->attachedEdge->nextEdge->origin->v - *tmpFaces[ i ]->attachedEdge->origin->v).normalize();
+		tmpFaces[ i ]->normal = tmpFaces[ i ]->normal.cross(VECTOR(*tmpFaces[ i ]->attachedEdge->nextEdge->nextEdge->origin->v - *tmpFaces[ i ]->attachedEdge->origin->v)).normalize();
 		if (generateAnimation)
 		{
-			addOneStep( tmpFaces[ i ] );
+			addOneStep(&CH1);
 		}
 	}
-	CH1.m_HalfEdges->splice( CH1.m_HalfEdges->end(), *CH2.m_HalfEdges );
-	CH1.m_Faces->splice( CH1.m_Faces->end(), *CH2.m_Faces );
-	CH1.m_Vertexs->splice( CH1.m_Vertexs->end(), *CH2.m_Vertexs );
+	
 
 	CH1.fixIterator();
 	CH1.removeUselessVertices();
 	CH1.fixIterator();
+
 	return CH1;
 }
 
